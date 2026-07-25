@@ -135,20 +135,25 @@ pnpm eval:sweep
 - Node.js 18.18 or newer
 - pnpm 9 or newer
 - Git
+- Postgres connection string ([Neon](https://neon.tech) free tier works; see `.env.example`)
 
 ### Clone, install, and run
 
-Clone the repository first, then install and start the app:
+Clone the repository first, copy env, then install and start the app:
 
 ```bash
 git clone https://github.com/yuan05-afk/flyrank-capstone-muni.git
 cd flyrank-capstone-muni
+cp .env.example .env
+# Edit DATABASE_URL to your Neon or local Postgres URL
 pnpm install
 pnpm db:push
 pnpm db:seed
 pnpm knowledge:embed
 pnpm dev
 ```
+
+For Vercel + Neon deployment steps, see [VERCEL.md](VERCEL.md). Optional `NEXT_PUBLIC_*` Capstone URL slots in `.env.example` are for live cross-links in a follow-up; leave empty until those apps are deployed.
 
 Open [http://localhost:3000](http://localhost:3000). Demo owner key:
 `muni_demo_key_001`.
@@ -228,17 +233,19 @@ and [docs/diagram.md](docs/diagram.md).
 - Seed embeddings are deterministic feature hashing for zero-key demos, not a
   production embedding model. Optional live chat (Groq/Gemini) uses the same
   guard contracts.
-- SQLite job claiming with leases fits this single-instance Capstone. A
-  distributed deploy needs transactional row locking in Postgres.
-- There is no hosted production deploy in this repo; reviewers run locally from
-  Quick start.
+- Production targets **Postgres (Neon)** on Vercel; local dev uses the same
+  `DATABASE_URL` shape. Job claiming uses leases suitable for this demo; very
+  high concurrency would need tighter row locking tuning.
+- Manual Vercel deploy steps live in [VERCEL.md](VERCEL.md). `NEXT_PUBLIC_*`
+  Capstone URL env vars are placeholders until chat and cards cite live sibling
+  Capstone domains.
 - The mascot and UI are Capstone-grade product craft, not a claim of production
   ops SLAs.
 
 ## Technology
 
 - Next.js App Router + TypeScript
-- Prisma + SQLite
+- Prisma + Postgres (Neon)
 - Zod
 - Vitest
 - Framer Motion + Lenis
