@@ -19,28 +19,28 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "project",
     title: "Checkpoint lead-capture platform",
-    body: `Checkpoint is a FlyRank Capstone Yuan shipped: an embeddable widget and lead-capture platform with multi-tenant isolation, CORS allowlisting, and geo-provider failover. Try the live site at ${capstoneUrl("checkpoint")}.`,
+    body: `Checkpoint is a FlyRank Capstone Yuan shipped: an embeddable widget and lead-capture platform with multi-tenant isolation, CORS allowlisting, and geo-provider failover. Live demo: ${capstoneUrl("checkpoint")}.`,
     sourceId: "persona.checkpoint",
     tags: ["checkpoint", "widget", "leads", "multi-tenant"],
   },
   {
     kind: "project",
     title: "Lens image relevance",
-    body: `Lens is a FlyRank Capstone Yuan shipped that tags images, ranks them by meaning, and refuses wrong pairings with a mismatch guard. It proves fox posts reject wolf images and reports top-1 precision. Try the live site at ${capstoneUrl("lens")}.`,
+    body: `Lens is a FlyRank Capstone Yuan shipped that tags images, ranks them by meaning, and refuses wrong pairings with a mismatch guard. It proves fox posts reject wolf images and reports top-1 precision. Live demo: ${capstoneUrl("lens")}.`,
     sourceId: "persona.lens",
     tags: ["lens", "vision", "embeddings", "guard"],
   },
   {
     kind: "project",
     title: "Broadcast social media studio",
-    body: `Broadcast is a FlyRank Capstone Yuan shipped: a campaign studio that generates platform-aware captions and image variants with durable jobs and review desks. Try the live site at ${capstoneUrl("broadcast")}.`,
+    body: `Broadcast is a FlyRank Capstone Yuan shipped: a campaign studio that generates platform-aware captions and image variants with durable jobs and review desks. Live demo: ${capstoneUrl("broadcast")}.`,
     sourceId: "persona.broadcast",
     tags: ["broadcast", "social", "variants"],
   },
   {
     kind: "project",
     title: "Muni grounded personal agent",
-    body: `Muni is Yuan's General AI Fluency Impact Project Capstone: a personal brand site plus a grounded agent that cites verified knowledge and refuses when evidence is missing. Yuan shipped Muni as a live FlyRank Capstone at ${capstoneUrl("muni")}.`,
+    body: `Muni is Yuan's General AI Fluency Impact Project Capstone: a personal brand site plus a grounded agent that cites verified knowledge and refuses when evidence is missing. Yuan shipped Muni as a live FlyRank Capstone. Live demo: ${capstoneUrl("muni")}.`,
     sourceId: "persona.muni",
     tags: ["muni", "agent", "grounding", "citations"],
   },
@@ -75,9 +75,11 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "link",
     title: "FlyRank Capstones (live sites)",
-    body: `Yuan's FlyRank Capstones are live and runnable: ${CAPSTONE_LINKS.map(
-      (link) => `${link.name} at ${link.url} (${link.tagline})`
-    ).join(" ")} Each is also published as a public GitHub repository with a pitch README, screenshots, and demos.`,
+    body: [
+      "Yuan's four FlyRank Capstones are live and runnable.",
+      ...CAPSTONE_LINKS.map((link) => `${link.name}: ${link.url}. ${link.tagline}`),
+      "Each Capstone is also published as a public GitHub repository with a pitch README, screenshots, and demos.",
+    ].join(" "),
     sourceId: "persona.links.capstones",
     tags: ["github", "portfolio", "capstones", "links", "live", "websites", "demo"],
   },

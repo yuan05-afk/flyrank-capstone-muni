@@ -57,7 +57,11 @@ export class SeedChatProvider implements ChatProvider {
     const primary = input.cards[0];
     const support = input.cards.slice(0, 2);
     // Strip URLs before sentence-splitting so we do not cut a link at its dot (e.g. .vercel.app).
-    const primaryNoUrls = primary.body.replace(URL_PATTERN, "").replace(/\s{2,}/g, " ");
+    const primaryNoUrls = primary.body
+      .replace(/\s*https?:\/\/[^\s<]+[^\s.,!?)<]*/g, "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+\(/g, " (")
+      .trim();
     const quote = primaryNoUrls.split(/[.!?]/)[0]?.trim() || primaryNoUrls.slice(0, 140);
 
     // Collect any live links referenced by the cited cards so they render in full.
@@ -83,11 +87,14 @@ export class SeedChatProvider implements ChatProvider {
       answer: answer.trim(),
       citations: support.map((card) => {
         const urls = card.body.match(URL_PATTERN) ?? [];
-        const base = card.body.slice(0, 120);
         const firstUrl = urls[0];
-        // Ensure the citation quote keeps a full link when the card has one.
-        const quoteText =
-          firstUrl && !base.includes(firstUrl) ? `${base.trim()} ${firstUrl}` : base;
+        // Prefer a short prose snippet + full URL so the link never gets truncated mid-host.
+        const prose = card.body
+          .replace(/\s*https?:\/\/[^\s<]+[^\s.,!?)<]*/g, "")
+          .replace(/\s{2,}/g, " ")
+          .trim()
+          .slice(0, 160);
+        const quoteText = firstUrl ? `${prose} ${firstUrl}`.slice(0, 400) : prose.slice(0, 200);
         return { cardId: card.id, title: card.title, quote: quoteText };
       }),
       confidence: 0.9,
