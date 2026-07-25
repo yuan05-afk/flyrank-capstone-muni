@@ -2,6 +2,7 @@ import { groundedAnswerSchema, type GroundedAnswer } from "@/lib/validation";
 import type { ChatProvider, EmbeddingProvider } from "./contracts";
 
 const DIMS = 64;
+const URL_PATTERN = /https?:\/\/[^\s<]+[^\s.,!?)<]/g;
 
 function hashToken(token: string): number {
   let h = 2166136261;
@@ -55,24 +56,40 @@ export class SeedChatProvider implements ChatProvider {
 
     const primary = input.cards[0];
     const support = input.cards.slice(0, 2);
-    const quote = primary.body.split(/[.!?]/)[0]?.trim() || primary.body.slice(0, 140);
+    // Strip URLs before sentence-splitting so we do not cut a link at its dot (e.g. .vercel.app).
+    const primaryNoUrls = primary.body.replace(URL_PATTERN, "").replace(/\s{2,}/g, " ");
+    const quote = primaryNoUrls.split(/[.!?]/)[0]?.trim() || primaryNoUrls.slice(0, 140);
+
+    // Collect any live links referenced by the cited cards so they render in full.
+    const links: string[] = [];
+    for (const card of support) {
+      const urls = card.body.match(URL_PATTERN) ?? [];
+      for (const url of urls) {
+        const entry = `${card.title}: ${url}`;
+        if (!links.includes(entry)) links.push(entry);
+      }
+    }
+
     const answer = [
       `From verified knowledge: ${quote}.`,
-      support.length > 1
-        ? ` Related card: ${support[1].title}.`
-        : "",
+      support.length > 1 ? ` Related card: ${support[1].title}.` : "",
       input.audience && input.audience !== "general"
         ? ` Tailored for a ${input.audience} conversation.`
         : "",
+      links.length ? ` Live links: ${links.join(" | ")}` : "",
     ].join("");
 
     return groundedAnswerSchema.parse({
       answer: answer.trim(),
-      citations: support.map((card) => ({
-        cardId: card.id,
-        title: card.title,
-        quote: card.body.slice(0, 120),
-      })),
+      citations: support.map((card) => {
+        const urls = card.body.match(URL_PATTERN) ?? [];
+        const base = card.body.slice(0, 120);
+        const firstUrl = urls[0];
+        // Ensure the citation quote keeps a full link when the card has one.
+        const quoteText =
+          firstUrl && !base.includes(firstUrl) ? `${base.trim()} ${firstUrl}` : base;
+        return { cardId: card.id, title: card.title, quote: quoteText };
+      }),
       confidence: 0.9,
       grounded: true,
     });

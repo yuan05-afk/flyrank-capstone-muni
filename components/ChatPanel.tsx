@@ -25,6 +25,32 @@ function SkeletonBlock({ className = "" }: { className?: string }) {
   return <div className={`skeleton-pulse rounded-2xl bg-line/70 ${className}`} />;
 }
 
+const URL_PATTERN = /(https?:\/\/[^\s<]+[^\s.,!?)<])/g;
+const IS_URL = /^https?:\/\//;
+
+function LinkifiedText({ text }: { text: string }) {
+  const parts = text.split(URL_PATTERN);
+  return (
+    <p className="leading-relaxed">
+      {parts.map((part, index) =>
+        IS_URL.test(part) ? (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-muni underline decoration-muni/40 underline-offset-2 hover:decoration-muni"
+          >
+            {part}
+          </a>
+        ) : (
+          <span key={index}>{part}</span>
+        )
+      )}
+    </p>
+  );
+}
+
 function TypingDots() {
   return (
     <span className="typing-dots" aria-hidden>
@@ -349,7 +375,7 @@ export function ChatPanel() {
                       <span>{message.content}</span>
                     </div>
                   ) : (
-                    <p className="leading-relaxed">{message.content}</p>
+                    <LinkifiedText text={message.content} />
                   )}
 
                   {message.status && !message.pending && (
@@ -404,9 +430,11 @@ export function ChatPanel() {
                               exit={reduce ? undefined : { opacity: 0, height: 0 }}
                               className="citation-panel"
                             >
-                              <p className="source-quote is-static !border-l-[rgba(217,119,6,.45)]">
-                                {citation.quote || "No quote stored for this citation."}
-                              </p>
+                              <div className="source-quote is-static !border-l-[rgba(217,119,6,.45)]">
+                                <LinkifiedText
+                                  text={citation.quote || "No quote stored for this citation."}
+                                />
+                              </div>
                               <button
                                 type="button"
                                 className="answer-card-cta mt-2"
