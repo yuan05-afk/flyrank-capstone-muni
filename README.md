@@ -10,7 +10,7 @@ every claim, and honestly refuses when evidence is missing.
 The name comes from Filipino "muni-muni," thoughtful reflection. Think first,
 then speak. The Grounding Guard is the product center, not a footnote.
 
-**Run locally:** [Quick start](#quick-start) | [Prove it yourself](#prove-it-yourself) | [Architecture](#architecture)
+**Deployed domain:** [https://muni-flyrank.vercel.app/](https://muni-flyrank.vercel.app/) | [Quick start](#quick-start) | [Prove it yourself](#prove-it-yourself) | [Architecture](#architecture)
 
 ![Muni landing hero with waving companion mascot and interactive Grounding Guard card](docs/images/shots/muni-landing.png)
 
