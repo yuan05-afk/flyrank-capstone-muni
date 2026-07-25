@@ -7,7 +7,6 @@ import {
   answersRepository,
   conversationRepository,
   costsRepository,
-  knowledgeRepository,
 } from "@/repositories";
 import { guardGrounding, isSocialOpener, topicalOverlap } from "./guard.service";
 import { retrieveService } from "./retrieve.service";
@@ -93,8 +92,9 @@ export const chatService = {
       body: item.card.body,
       kind: item.card.kind,
     }));
-    const allCards = await knowledgeRepository.list();
-    const corpus = allCards.map((card) => `${card.title} ${card.body}`).join("\n");
+    const corpus = retrieved.allCards
+      .map((card) => `${card.title} ${card.body}`)
+      .join("\n");
     // Citation follow-ups already name a verified card, so treat topical overlap as satisfied.
     const overlap = input.focusCardId ? 1 : topicalOverlap(input.question, corpus);
 
@@ -191,18 +191,20 @@ export const chatService = {
       }),
     });
 
-    await conversationRepository.addMessage(conversationId, "assistant", finalAnswer);
-
+    // These two writes are independent, so run them together to save a round-trip.
     const pricing = PRICING[providerId as keyof typeof PRICING] ?? { usdPerUnit: 0 };
-    await costsRepository.create({
-      kind: "chat",
-      model: providerId,
-      units: 1,
-      unitCostUsd: pricing.usdPerUnit,
-      totalUsd: pricing.usdPerUnit,
-      refType: "answer",
-      refId: record.id,
-    });
+    await Promise.all([
+      conversationRepository.addMessage(conversationId, "assistant", finalAnswer),
+      costsRepository.create({
+        kind: "chat",
+        model: providerId,
+        units: 1,
+        unitCostUsd: pricing.usdPerUnit,
+        totalUsd: pricing.usdPerUnit,
+        refType: "answer",
+        refId: record.id,
+      }),
+    ]);
 
     return {
       conversationId,

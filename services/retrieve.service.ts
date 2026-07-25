@@ -85,6 +85,9 @@ export const retrieveService = {
     return {
       bestScore: candidates[0]?.score ?? 0,
       candidates,
+      // Return the full card set so callers can build a topical-overlap corpus
+      // without a second round-trip to the database.
+      allCards: cards,
     };
   },
 };
