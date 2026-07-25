@@ -51,20 +51,34 @@ export function DeskClient() {
   const [kind, setKind] = useState("faq");
   const [notice, setNotice] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    const [inboxData, costData, evalData] = await Promise.all([
+  const load = useCallback(async (options?: { includeEval?: boolean }) => {
+    const includeEval = options?.includeEval !== false;
+    const [inboxData, costData] = await Promise.all([
       fetch("/api/inbox").then((r) => r.json()),
       fetch("/api/costs").then((r) => r.json()),
-      fetch("/api/eval").then((r) => r.json()),
     ]);
     if (inboxData.error) throw new Error(inboxData.error);
     setInbox(inboxData);
     setCosts(costData);
-    setEvaluation(evalData);
+
+    // Full live eval runs 5 chat rounds and is too slow for desk boot on Vercel.
+    // Load it after the inbox paints so the owner desk never waits on it.
+    if (includeEval) {
+      void fetch("/api/eval")
+        .then((r) => r.json())
+        .then((evalData) => {
+          if (!evalData?.error && typeof evalData.refusalRecall === "number") {
+            setEvaluation(evalData);
+          }
+        })
+        .catch(() => {
+          /* keep prior eval metrics */
+        });
+    }
   }, []);
 
   useEffect(() => {
-    void load()
+    void load({ includeEval: true })
       .catch(() => {
         window.location.href = "/login";
       })
@@ -76,7 +90,7 @@ export function DeskClient() {
     await fetch("/api/jobs/embed", { method: "POST" });
     const tick = await fetch("/api/worker/tick?drain=1", { method: "POST" });
     const result = await tick.json().catch(() => ({ processed: 0 }));
-    await load();
+    await load({ includeEval: false });
     setNotice(`${result.processed ?? 0} embed jobs processed.`);
     setBusy("");
   }
@@ -92,7 +106,7 @@ export function DeskClient() {
     if (response.ok) {
       setTitle("");
       setBody("");
-      await load();
+      await load({ includeEval: false });
       setNotice("Knowledge card saved. Run embed to index it.");
     }
     setBusy("");
