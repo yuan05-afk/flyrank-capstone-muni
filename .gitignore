@@ -8,3 +8,4 @@ coverage
 dist
 tmp-*.json
 cookies.txt
+tsconfig.tsbuildinfo

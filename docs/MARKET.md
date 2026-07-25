@@ -17,7 +17,7 @@ without inventing facts.
 1. Trust is the product, not the chatbot skin.
 2. The owner learning loop turns refused questions into knowledge-card work.
 3. Bring-your-own persona: replace seed cards with real facts and re-embed.
-4. Optional Gemini live path, seed path for zero-key demos and CI.
+4. Optional Groq or Gemini live chat path; seed path for zero-key demos and CI.
 
 ## Bring your own persona
 

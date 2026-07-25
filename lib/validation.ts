@@ -7,7 +7,7 @@ export const groundedAnswerSchema = z.object({
       z.object({
         cardId: z.string().min(1),
         title: z.string().min(1),
-        quote: z.string().max(400).optional(),
+        quote: z.string().max(400).nullish(),
       })
     )
     .max(12),
@@ -24,6 +24,8 @@ export const chatRequestSchema = z.object({
     .optional()
     .default("general"),
   conversationId: z.string().optional(),
+  /** When set, pin this knowledge card into retrieval (citation follow-ups). */
+  focusCardId: z.string().min(1).optional(),
 });
 
 export const knowledgeCardSchema = z.object({

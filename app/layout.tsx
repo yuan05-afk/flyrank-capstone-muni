@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Muni - Grounded Personal AI",
   description: "Meet Muni. The personal AI that only speaks from verified knowledge.",
-  icons: { icon: [{ url: "/favicon.svg?v=1", type: "image/svg+xml" }] },
+  icons: { icon: [{ url: "/favicon.svg?v=3", type: "image/svg+xml" }] },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

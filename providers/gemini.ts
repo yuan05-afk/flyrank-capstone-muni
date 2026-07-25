@@ -8,8 +8,11 @@ function apiKey() {
   return key;
 }
 
+const CHAT_MODEL = process.env.GEMINI_CHAT_MODEL || "gemini-1.5-flash";
+const EMBED_MODEL = process.env.GEMINI_EMBED_MODEL || "text-embedding-004";
+
 export class GeminiChatProvider implements ChatProvider {
-  readonly id = "gemini-2.0-flash";
+  readonly id = CHAT_MODEL;
 
   async answer(input: {
     question: string;
@@ -28,7 +31,7 @@ export class GeminiChatProvider implements ChatProvider {
 
     const genAI = new GoogleGenerativeAI(apiKey());
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: CHAT_MODEL,
       generationConfig: { responseMimeType: "application/json" },
     });
 
@@ -51,13 +54,31 @@ ${context}`;
 }
 
 export class GeminiEmbeddingProvider implements EmbeddingProvider {
-  readonly id = "text-embedding-004";
+  readonly id = EMBED_MODEL;
 
   async embed(text: string): Promise<number[]> {
     const genAI = new GoogleGenerativeAI(apiKey());
-    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
-    const result = await model.embedContent(text);
-    const values = result.embedding.values;
+    // Prefer the dedicated embeddings endpoint. Some Gemini model ids are
+    // chat-only and return 404 for embedContent.
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${EMBED_MODEL}:embedContent?key=${apiKey()}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: `models/${EMBED_MODEL}`,
+          content: { parts: [{ text }] },
+        }),
+      }
+    );
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(`Gemini embedding failed ${response.status}: ${detail}`);
+    }
+    const json = (await response.json()) as {
+      embedding?: { values?: number[] };
+    };
+    const values = json.embedding?.values;
     if (!values?.length) throw new Error("Gemini embedding returned empty vector");
     return values;
   }

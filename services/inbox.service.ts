@@ -8,10 +8,12 @@ export const inboxService = {
     ]);
 
     const grounded = answers.filter((row) => row.status === "grounded").length;
-    const guarded = answers.filter((row) => row.status !== "grounded").length;
+    const guarded = answers.filter((row) =>
+      row.status === "guarded" || row.status === "refused"
+    ).length;
 
     const gaps = answers
-      .filter((row) => row.status !== "grounded")
+      .filter((row) => row.status === "guarded" || row.status === "refused")
       .slice(0, 8)
       .map((row) => ({
         question: row.question,

@@ -8,7 +8,7 @@ https://github.com/yuan05-afk/flyrank-capstone-muni
 
 ## Notes
 
-General AI Fluency, Week 6 Impact Project. Run: `pnpm install && pnpm db:push && pnpm db:seed && pnpm knowledge:embed && pnpm dev`. Demo key: `muni_demo_key_001`. Seed providers need no cloud account. Ask about Lens for a cited answer; ask for a secret salary to prove the Grounding Guard. Optional Gemini via local `.env` only. See docs/MARKET.md.
+General AI Fluency, Week 6 Impact Project. Run: `pnpm install && pnpm db:push && pnpm db:seed && pnpm knowledge:embed && pnpm dev`. Demo key: `muni_demo_key_001`. Seed providers need no cloud account. Ask about Lens for a cited answer; ask for a secret salary to prove the Grounding Guard; tap a citation and Ask more to stay grounded on that card. Optional Groq or Gemini via local `.env` only. See docs/MARKET.md.
 
 ## Files
 

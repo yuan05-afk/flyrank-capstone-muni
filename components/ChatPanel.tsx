@@ -1,171 +1,481 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import Link from "next/link";
-import { AUDIENCE_OPENERS, type Audience } from "@/config/audience.config";
-import { BrandLockup } from "@/components/BrandMark";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AUDIENCE_OPENERS, type Audience, type AudienceSuggestion } from "@/config/audience.config";
+import { AudienceSelect } from "@/components/AudienceSelect";
 import { MuniMascot, type MuniState } from "@/components/MuniMascot";
+import { MotifReflect, MotifSend } from "@/components/Motifs";
+import { SiteHeader } from "@/components/SiteHeader";
 
 type ChatMessage = {
+  id: string;
   role: "user" | "assistant";
   content: string;
   status?: string;
   citations?: Array<{ cardId: string; title: string; quote?: string }>;
+  pending?: boolean;
 };
 
+function uid() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function SkeletonBlock({ className = "" }: { className?: string }) {
+  return <div className={`skeleton-pulse rounded-2xl bg-line/70 ${className}`} />;
+}
+
+function TypingDots() {
+  return (
+    <span className="typing-dots" aria-hidden>
+      <span />
+      <span />
+      <span />
+    </span>
+  );
+}
+
 export function ChatPanel() {
+  const reduce = useReducedMotion();
+  const [booting, setBooting] = useState(true);
   const [audience, setAudience] = useState<Audience>("general");
-  const [question, setQuestion] = useState(AUDIENCE_OPENERS.general.starter);
+  const [question, setQuestion] = useState("");
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "listening" | "thinking" | "typing">("idle");
   const [muniState, setMuniState] = useState<MuniState>("wave");
+  const [openCitation, setOpenCitation] = useState<string | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const opener = useMemo(() => AUDIENCE_OPENERS[audience], [audience]);
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
-    if (!question.trim() || busy) return;
-    const asked = question.trim();
+  useEffect(() => {
+    const timer = window.setTimeout(() => setBooting(false), reduce ? 120 : 700);
+    return () => window.clearTimeout(timer);
+  }, [reduce]);
+
+  useEffect(() => {
+    const node = scrollerRef.current;
+    if (!node) return;
+    node.scrollTo({ top: node.scrollHeight, behavior: reduce ? "auto" : "smooth" });
+  }, [messages, phase, reduce]);
+
+  async function ask(raw: string, options?: { focusCardId?: string }) {
+    const asked = raw.trim();
+    if (!asked || busy) return;
+
     setBusy(true);
+    setPhase("listening");
     setMuniState("listening");
-    setMessages((items) => [...items, { role: "user", content: asked }]);
     setQuestion("");
+
+    const userId = uid();
+    const pendingId = uid();
+    setMessages((items) => [
+      ...items,
+      { id: userId, role: "user", content: asked },
+      {
+        id: pendingId,
+        role: "assistant",
+        content: "Muni is thinking through verified cards...",
+        pending: true,
+        status: "thinking",
+      },
+    ]);
+
+    await new Promise((resolve) => window.setTimeout(resolve, reduce ? 80 : 280));
+    setPhase("thinking");
     setMuniState("thinking");
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: asked, audience, conversationId }),
+        body: JSON.stringify({
+          question: asked,
+          audience,
+          conversationId,
+          focusCardId: options?.focusCardId,
+        }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Chat failed");
+
+      setPhase("typing");
+      setMuniState("answering");
+      setMessages((items) =>
+        items.map((item) =>
+          item.id === pendingId
+            ? {
+                ...item,
+                content: "Muni is drafting a grounded reply...",
+                status: "typing",
+              }
+            : item
+        )
+      );
+      await new Promise((resolve) => window.setTimeout(resolve, reduce ? 60 : 420));
+
       setConversationId(data.conversationId);
-      setMessages((items) => [
-        ...items,
-        {
-          role: "assistant",
-          content: data.answer.answer,
-          status: data.answer.status,
-          citations: data.citations,
-        },
-      ]);
-      setMuniState(data.answer.status === "grounded" ? "answering" : "grounded-refuse");
+      const status = data.answer.status as string;
+      setMessages((items) =>
+        items.map((item) =>
+          item.id === pendingId
+            ? {
+                id: pendingId,
+                role: "assistant",
+                content: data.answer.answer,
+                status,
+                citations: data.citations,
+                pending: false,
+              }
+            : item
+        )
+      );
+      setMuniState(
+        status === "grounded" || status === "open"
+          ? status === "open"
+            ? "wave"
+            : "answering"
+          : "grounded-refuse"
+      );
+      setPhase("idle");
     } catch (error) {
-      setMessages((items) => [
-        ...items,
-        {
-          role: "assistant",
-          content: error instanceof Error ? error.message : "Something went wrong.",
-          status: "refused",
-        },
-      ]);
+      setMessages((items) =>
+        items.map((item) =>
+          item.id === pendingId
+            ? {
+                id: pendingId,
+                role: "assistant",
+                content: error instanceof Error ? error.message : "Something went wrong.",
+                status: "refused",
+                pending: false,
+              }
+            : item
+        )
+      );
       setMuniState("grounded-refuse");
+      setPhase("idle");
     } finally {
       setBusy(false);
+      window.setTimeout(() => inputRef.current?.focus(), 40);
     }
+  }
+
+  function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    void ask(question);
+  }
+
+  function onAudienceChange(next: Audience) {
+    setAudience(next);
+    setMuniState("wave");
+    setPhase("idle");
+    if (!busy) setQuestion(AUDIENCE_OPENERS[next].starter);
+  }
+
+  function onSuggestion(item: AudienceSuggestion) {
+    if (busy) return;
+    setMuniState("listening");
+    void ask(item.question);
+  }
+
+  const statusLabel =
+    phase === "listening"
+      ? "Listening"
+      : phase === "thinking"
+        ? "Thinking"
+        : phase === "typing"
+          ? "Typing"
+          : "Ready";
+
+  if (booting) {
+    return (
+      <main className="hero-mesh min-h-screen">
+        <SiteHeader
+          links={[
+            { href: "/", label: "Marketing" },
+            { href: "/login", label: "Owner desk", primary: true },
+          ]}
+        />
+        <div className="chat-shell mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-7">
+          <aside className="surface space-y-4 p-5">
+            <SkeletonBlock className="mx-auto h-36 w-36 !rounded-full" />
+            <SkeletonBlock className="h-12 w-full" />
+            <SkeletonBlock className="h-20 w-full" />
+            <SkeletonBlock className="h-12 w-full" />
+            <SkeletonBlock className="h-12 w-full" />
+          </aside>
+          <section className="surface flex min-h-[60vh] flex-col gap-4 p-5">
+            <SkeletonBlock className="h-10 w-56" />
+            <SkeletonBlock className="h-4 w-80 max-w-full" />
+            <div className="mt-4 flex-1 space-y-3">
+              <SkeletonBlock className="ml-auto h-16 w-[70%]" />
+              <SkeletonBlock className="h-24 w-[78%]" />
+              <SkeletonBlock className="ml-auto h-14 w-[55%]" />
+            </div>
+            <SkeletonBlock className="h-14 w-full !rounded-2xl" />
+          </section>
+        </div>
+      </main>
+    );
   }
 
   return (
     <main className="hero-mesh min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
-          <BrandLockup />
-          <div className="flex items-center gap-3">
-            <Link href="/" className="text-sm text-muted hover:text-muni">Marketing</Link>
-            <Link href="/login" className="btn-secondary !min-h-9 !py-1.5">Owner desk</Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader
+        links={[
+          { href: "/", label: "Marketing" },
+          { href: "/login", label: "Owner desk", primary: true },
+        ]}
+      />
 
-      <div className="mx-auto grid max-w-6xl gap-5 px-5 py-7 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="surface p-5">
-          <MuniMascot state={muniState} className="mx-auto h-36 w-36" />
-          <p className="mt-3 text-center text-sm text-muted">{opener.opener}</p>
-          <label className="mt-5 block text-xs font-semibold uppercase tracking-wide text-muted">Audience</label>
-          <select
-            className="input mt-2"
-            value={audience}
-            onChange={(event) => {
-              const next = event.target.value as Audience;
-              setAudience(next);
-              setQuestion(AUDIENCE_OPENERS[next].starter);
-              setMuniState("wave");
-            }}
-          >
-            {Object.entries(AUDIENCE_OPENERS).map(([key, value]) => (
-              <option key={key} value={key}>{value.label}</option>
-            ))}
-          </select>
-          <div className="mt-4 space-y-2">
-            {["What projects has Yuan shipped?", "What is Muni?", "What is Yuan's secret salary?"].map((sample) => (
-              <button
-                key={sample}
-                type="button"
-                className="btn-secondary w-full !justify-start !text-left text-sm"
-                onClick={() => {
-                  setQuestion(sample);
-                  setMuniState("listening");
-                }}
-              >
-                {sample}
-              </button>
-            ))}
+      <motion.div
+        initial={reduce ? false : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="chat-shell mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-7"
+      >
+        <aside className="surface chat-aside p-4 sm:p-5">
+          <MuniMascot state={muniState} className="relative mx-auto h-32 w-32 sm:h-36 sm:w-36" />
+          <div className="relative mt-3 text-center">
+            <p className="font-display text-lg font-semibold">Muni</p>
+            <p className="mt-1 text-sm text-muted">{opener.opener}</p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5">
+              <span className={`status-dot ${phase === "idle" ? "is-ready" : "is-live"}`} />
+              <span className="mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                {statusLabel}
+              </span>
+            </div>
+          </div>
+
+          <div className="relative mt-5">
+            <AudienceSelect value={audience} onChange={onAudienceChange} />
+          </div>
+
+          <div className="relative z-10 mt-5">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                Try these
+              </p>
+              <span className="mono text-[9px] text-muted">verified asks</span>
+            </div>
+            <div className="space-y-2">
+              {opener.suggestions.map((item, index) => (
+                <motion.button
+                  key={`${audience}-${item.question}`}
+                  type="button"
+                  initial={reduce ? false : { opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  disabled={busy}
+                  className={`suggestion-card focus-ring ${item.kind === "refuse-demo" ? "is-refuse" : ""}`}
+                  onClick={() => onSuggestion(item)}
+                >
+                  <span className="flex items-start justify-between gap-2">
+                    <span className="font-display text-sm font-semibold text-ink">{item.label}</span>
+                    <span
+                      className={`badge shrink-0 ${
+                        item.kind === "refuse-demo" ? "badge-danger" : "badge-ok"
+                      }`}
+                    >
+                      {item.kind === "refuse-demo" ? "refuse demo" : "grounds"}
+                    </span>
+                  </span>
+                  <span className="mt-1 block text-left text-xs leading-relaxed text-muted">
+                    {item.question}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
           </div>
         </aside>
 
-        <section className="surface flex min-h-[70vh] flex-col p-5">
-          <div className="mb-4">
-            <h1 className="font-display text-2xl font-semibold">Chat with Muni</h1>
-            <p className="text-sm text-muted">Answers come from verified knowledge cards. No grounding means an honest refuse.</p>
+        <section className="surface flex min-h-[62vh] flex-col p-4 sm:min-h-[70vh] sm:p-5">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-4">
+            <div className="min-w-0">
+              <p className="eyebrow">
+                <span className="muni-dot" /> grounded desk
+              </p>
+              <h1 className="mt-2 font-display text-xl font-semibold tracking-tight sm:text-2xl">
+                Chat with Muni
+              </h1>
+              <p className="mt-1 max-w-xl text-sm text-muted">
+                Answers come from verified knowledge cards. Weak grounding means an honest refuse.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line bg-canvas/80 px-3 py-2 text-right">
+              <p className="mono text-[9px] uppercase tracking-[0.12em] text-muted">Audience</p>
+              <p className="font-display text-sm font-semibold">{opener.label}</p>
+            </div>
           </div>
-          <div className="signal-scroll flex-1 space-y-3 overflow-y-auto pr-1">
+
+          <div ref={scrollerRef} className="signal-scroll flex-1 space-y-3 overflow-y-auto pr-1">
             {messages.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-line bg-canvas/60 p-8 text-center text-sm text-muted">
-                Ask about Yuan&apos;s Capstones, stack, or Muni. Try an out-of-scope question to see the guard.
-              </div>
-            )}
-            {messages.map((message, index) => (
-              <div
-                key={`${message.role}-${index}`}
-                className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm ${
-                  message.role === "user"
-                    ? "ml-auto bg-muni text-white"
-                    : "bg-canvas border border-line"
-                }`}
+              <motion.div
+                initial={reduce ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="empty-stage"
               >
-                <p>{message.content}</p>
-                {message.status && (
-                  <span className={`badge mt-2 ${message.status === "grounded" ? "badge-ok" : "badge-danger"}`}>
-                    {message.status}
-                  </span>
-                )}
-                {!!message.citations?.length && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {message.citations.map((citation) => (
-                      <span key={citation.cardId} className="tag-chip !bg-white">{citation.title}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-xl border border-line bg-fog">
+                  <MotifReflect className="h-10 w-10" />
+                </div>
+                <p className="font-display text-base font-semibold sm:text-lg">Start with a verified ask</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+                  Try Muni, Lens, stack, or Capstone projects. Use the refuse demo to watch the
+                  Grounding Guard protect the knowledge base.
+                </p>
+              </motion.div>
+            )}
+
+            <AnimatePresence initial={false}>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={reduce ? false : { opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.22 }}
+                  className={`max-w-[92%] rounded-2xl px-4 py-3 text-sm ${
+                    message.role === "user"
+                      ? "ml-auto bg-muni text-white"
+                      : "border border-line bg-white"
+                  }`}
+                >
+                  {message.pending ? (
+                    <div className="flex items-center gap-3 text-muted">
+                      <TypingDots />
+                      <span>{message.content}</span>
+                    </div>
+                  ) : (
+                    <p className="leading-relaxed">{message.content}</p>
+                  )}
+
+                  {message.status && !message.pending && (
+                    <span
+                      className={`badge mt-2 ${
+                        message.status === "grounded"
+                          ? "badge-ok"
+                          : message.status === "open"
+                            ? "badge-warn"
+                            : message.status === "guarded"
+                              ? "badge-warn"
+                              : "badge-danger"
+                      }`}
+                    >
+                      {message.status === "open" ? "hello" : message.status}
+                    </span>
+                  )}
+
+                  {!!message.citations?.length && (
+                    <div className="mt-3 space-y-2">
+                      <p className="mono text-[9px] uppercase tracking-[0.14em] text-muted">
+                        cited sources · tap to inspect
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {message.citations.map((citation) => {
+                          const key = `${message.id}:${citation.cardId}`;
+                          const open = openCitation === key;
+                          return (
+                            <button
+                              key={citation.cardId}
+                              type="button"
+                              className={`source-chip ${open ? "is-open" : ""}`}
+                              aria-expanded={open}
+                              onClick={() =>
+                                setOpenCitation((current) => (current === key ? null : key))
+                              }
+                            >
+                              {citation.title}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <AnimatePresence>
+                        {message.citations.map((citation) => {
+                          const key = `${message.id}:${citation.cardId}`;
+                          if (openCitation !== key) return null;
+                          return (
+                            <motion.div
+                              key={key}
+                              initial={reduce ? false : { opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={reduce ? undefined : { opacity: 0, height: 0 }}
+                              className="citation-panel"
+                            >
+                              <p className="source-quote is-static !border-l-[rgba(217,119,6,.45)]">
+                                {citation.quote || "No quote stored for this citation."}
+                              </p>
+                              <button
+                                type="button"
+                                className="answer-card-cta mt-2"
+                                disabled={busy}
+                                onClick={() => {
+                                  setOpenCitation(null);
+                                  void ask(`What does the "${citation.title}" knowledge card cover?`, {
+                                    focusCardId: citation.cardId,
+                                  });
+                                }}
+                              >
+                                Ask more about this
+                              </button>
+                            </motion.div>
+                          );
+                        })}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
-          <form onSubmit={onSubmit} className="mt-4 flex gap-2">
-            <input
-              className="input"
-              value={question}
-              onChange={(event) => {
-                setQuestion(event.target.value);
-                setMuniState("listening");
-              }}
-              placeholder="Ask Muni something grounded..."
-              disabled={busy}
-            />
-            <button className="btn-primary" disabled={busy}>{busy ? "Thinking" : "Ask"}</button>
+
+          <form onSubmit={onSubmit} className="composer mt-4">
+            <div className="flex items-center gap-2 px-1 pb-2">
+              <span className={`status-dot ${phase === "idle" ? "is-ready" : "is-live"}`} />
+              <span className="mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                {phase === "idle"
+                  ? "Muni is ready"
+                  : phase === "listening"
+                    ? "Muni is listening"
+                    : phase === "thinking"
+                      ? "Muni is thinking"
+                      : "Muni is typing"}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                className="input !rounded-2xl !py-3"
+                value={question}
+                onChange={(event) => {
+                  setQuestion(event.target.value);
+                  if (!busy) {
+                    setMuniState("listening");
+                    setPhase("listening");
+                  }
+                }}
+                onBlur={() => {
+                  if (!busy && !question.trim()) {
+                    setPhase("idle");
+                    setMuniState("idle");
+                  }
+                }}
+                placeholder="Ask Muni something grounded..."
+                disabled={busy}
+              />
+              <button
+                className="btn-primary !min-w-[52px] !rounded-2xl !px-0 sm:!w-auto"
+                disabled={busy || !question.trim()}
+                aria-label="Send message"
+              >
+                {busy ? <TypingDots /> : <MotifSend />}
+              </button>
+            </div>
           </form>
         </section>
-      </div>
+      </motion.div>
     </main>
   );
 }

@@ -16,6 +16,7 @@
     "knowledge:embed": "tsx scripts/embed-knowledge.ts",
     "eval": "tsx scripts/run-eval.ts",
     "eval:sweep": "tsx scripts/threshold-sweep.ts",
+    "shots": "node scripts/capture-readme-shots.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

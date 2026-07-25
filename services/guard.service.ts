@@ -14,11 +14,33 @@ export type GuardFeatures = {
 
 export type GuardVerdict = {
   accepted: boolean;
-  status: "grounded" | "guarded" | "refused";
+  status: "grounded" | "guarded" | "refused" | "open";
   reason: string | null;
   policyId: string;
   features: GuardFeatures;
 };
+
+/** Short hellos / thanks that should not hit the grounding refuse path. */
+export function isSocialOpener(question: string): boolean {
+  const cleaned = question
+    .trim()
+    .toLowerCase()
+    .replace(/[!?.,…]+$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned || cleaned.length > 48) return false;
+
+  const openers = [
+    /^(hi|hello|hey|yo|howdy)( there)?$/,
+    /^(hi|hello|hey)\s+(muni|there)$/,
+    /^(good\s+)?(morning|afternoon|evening)$/,
+    /^how are you( doing)?$/,
+    /^what'?s up$/,
+    /^(thanks|thank you|thx|ty)( so much)?$/,
+    /^(ok|okay|cool|nice|great|got it)$/,
+  ];
+  return openers.some((pattern) => pattern.test(cleaned));
+}
 
 const STOP = new Set([
   "a", "an", "the", "and", "or", "of", "to", "for", "in", "on", "is", "are",

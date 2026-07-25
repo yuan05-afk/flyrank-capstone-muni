@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { groundedAnswerSchema } from "@/lib/validation";
-import { guardGrounding } from "@/services/guard.service";
+import { guardGrounding, isSocialOpener } from "@/services/guard.service";
 import { SeedChatProvider, SeedEmbeddingProvider } from "@/providers/seed";
 import { cosineSimilarity } from "@/lib/similarity";
 import { chatService } from "@/services/chat.service";
@@ -85,6 +85,30 @@ describe("chat decision core", () => {
     });
     expect(result.answer.status).not.toBe("grounded");
     expect(result.answer.answer.toLowerCase()).toContain("verified knowledge");
+  });
+
+  it("greets social openers without a grounding refuse", async () => {
+    expect(isSocialOpener("Hi")).toBe(true);
+    const result = await chatService.ask({
+      question: "Hi",
+      audience: "general",
+    });
+    expect(result.answer.status).toBe("open");
+    expect(result.answer.answer.toLowerCase()).toContain("muni");
+    expect(result.answer.answer.toLowerCase()).not.toContain("do not have verified knowledge");
+  });
+
+  it("grounds citation follow-ups when a focus card is pinned", async () => {
+    const cards = await knowledgeRepository.list();
+    const muni = cards.find((card) => card.title.toLowerCase().includes("muni grounded"));
+    if (!muni) throw new Error("muni card missing");
+    const result = await chatService.ask({
+      question: `What does the "${muni.title}" knowledge card cover?`,
+      audience: "recruiter",
+      focusCardId: muni.id,
+    });
+    expect(result.answer.status).toBe("grounded");
+    expect(result.citations.some((citation) => citation.cardId === muni.id)).toBe(true);
   });
 });
 

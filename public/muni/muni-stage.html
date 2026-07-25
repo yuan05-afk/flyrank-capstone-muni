@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Muni — grounded personal AI mascot</title>
+<!-- =====================================================================
+     Name:       Muni
+     Soul:       a warm amber spark that thinks before it speaks;
+                 brightens when grounded, dims when it must refuse
+     Silhouette: compact rounded orb with one eye-window (no limbs; not Clawd)
+     Palette:    #D97706 amber on #F2F3F7 canvas, #FEF3C7 fog accent
+     Product:    Muni Capstone — Grounding Guard personal agent
+     Medium:     Unicode Block Elements only (U+2580–U+259F)
+====================================================================== -->
+<style>
+  :root {
+    --brand:  #D97706;
+    --accent: #FEF3C7;
+    --ink:    #101828;
+    --bg:     #F2F3F7;
+  }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    font-family: "Courier New", Courier, monospace;
+    overflow: hidden;
+  }
+  .stage {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #mascot {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 88px;
+    line-height: 1.0;
+    white-space: pre;
+    color: var(--brand);
+    text-align: center;
+    user-select: none;
+    transition: transform 0.18s ease, opacity 0.18s ease, color 0.18s ease;
+  }
+  #mascot.is-refuse { color: #B45309; opacity: 0.72; }
+  #label {
+    margin-top: 44px;
+    color: var(--ink);
+    font-family: Outfit, Figtree, ui-sans-serif, sans-serif;
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+  }
+  #tag {
+    margin-top: 8px;
+    color: #667085;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div id="mascot" aria-label="Muni mascot"></div>
+  <div id="label">Muni</div>
+  <div id="tag">thinks before it answers</div>
+</div>
+<script>
+// Proven rounded-orb grid (mascot-maker orb direction). Eye gap is the actor.
+const poses = {
+  default:      { r1: " ▄▄▄ ", r2: "▐█ █▌", r3: " ▀▀▀ " },
+  blink:        { r1: " ▄▄▄ ", r2: "▐███▌", r3: " ▀▀▀ " },
+  "look-left":  { r1: " ▄▄▄ ", r2: "▐ ██▌", r3: " ▀▀▀ " },
+  "look-right": { r1: " ▄▄▄ ", r2: "▐██ ▌", r3: " ▀▀▀ " },
+  thinking:     { r1: " ▄▄▄ ", r2: "▐█▀█▌", r3: " ▀▀▀ " },
+  excited:      { r1: " ▄▄▄ ", r2: "▐   ▌", r3: " ▀▀▀ " },
+  refuse:       { r1: " ▄▄▄ ", r2: "▐▀▀▀▌", r3: " ▀▀▀ " },
+};
+
+const el = document.getElementById("mascot");
+function render(poseName, bob) {
+  const p = poses[poseName] || poses.default;
+  el.textContent = p.r1 + "\n" + p.r2 + "\n" + p.r3;
+  el.style.transform = `translateY(${bob}px)`;
+  el.classList.toggle("is-refuse", poseName === "refuse");
+}
+
+// total = 5200ms
+const sequence = [
+  { pose: "default",    bob: 0,   ms: 900 },
+  { pose: "blink",      bob: 0,   ms: 120 },
+  { pose: "default",    bob: 0,   ms: 500 },
+  { pose: "look-left",  bob: -2,  ms: 550 },
+  { pose: "look-right", bob: -2,  ms: 550 },
+  { pose: "default",    bob: 0,   ms: 360 },
+  { pose: "thinking",   bob: 2,   ms: 700 },
+  { pose: "blink",      bob: 0,   ms: 100 },
+  { pose: "excited",    bob: -10, ms: 340 },
+  { pose: "excited",    bob: -14, ms: 340 },
+  { pose: "default",    bob: 0,   ms: 420 },
+  { pose: "refuse",     bob: 4,   ms: 520 },
+  { pose: "default",    bob: 0,   ms: 800 },
+];
+
+let step = 0;
+function animate() {
+  const s = sequence[step % sequence.length];
+  render(s.pose, s.bob);
+  step++;
+  setTimeout(animate, s.ms);
+}
+animate();
+</script>
+</body>
+</html>
