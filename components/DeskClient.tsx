@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { KindSelect } from "@/components/KindSelect";
 import { SiteHeader } from "@/components/SiteHeader";
 
 type InboxSnapshot = {
@@ -313,19 +314,18 @@ export function DeskClient() {
             </div>
           </section>
 
-          <section className="surface p-4 sm:p-5">
+          <section className="surface relative z-30 overflow-visible p-4 sm:p-5">
             <h2 className="font-display text-xl font-semibold">Add knowledge card</h2>
             <p className="mb-4 text-sm text-muted">
               Extend Yuan&apos;s verified persona. Replace seed facts with your real details anytime.
             </p>
             <form onSubmit={addCard} className="space-y-3">
-              <select className="input" value={kind} onChange={(e) => setKind(e.target.value)}>
-                {["bio", "project", "skill", "faq", "link"].map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
+              <KindSelect
+                label="Card kind"
+                value={kind}
+                options={["bio", "project", "skill", "faq", "link"]}
+                onChange={setKind}
+              />
               <input
                 className="input"
                 placeholder="Title"
@@ -334,7 +334,7 @@ export function DeskClient() {
                 required
               />
               <textarea
-                className="input min-h-28"
+                className="input min-h-28 signal-scroll"
                 placeholder="Verified body"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}

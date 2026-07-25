@@ -12,18 +12,19 @@ then speak. The Grounding Guard is the product center, not a footnote.
 
 **Deployed domain:** [https://muni-flyrank.vercel.app/](https://muni-flyrank.vercel.app/) | [Quick start](#quick-start) | [Prove it yourself](#prove-it-yourself) | [Architecture](#architecture)
 
-![Muni landing hero with waving companion mascot and interactive Grounding Guard card](docs/images/shots/muni-landing.png)
+![Muni landing hero with waving companion mascot, Grounding Guard card, and two-row Capstone marquee](docs/images/shots/muni-landing.png)
 
 ## Why Muni
 
 - **Verified knowledge cards:** bio, projects, skills, FAQ, and links are editable facts, not prompt folklore.
 - **Cited answers:** every grounded reply maps claims back to retrieved cards; chips expand quotes and support follow-ups.
 - **Grounding Guard:** weak similarity, weak topical overlap, missing citations, or low confidence triggers an honest refuse.
+- **Contact section:** GitHub, chat notes, and live Capstone demos so a refuse is never a dead end.
 - **Social openers stay human:** greetings and thanks get a short hello without inventing career facts.
 - **Interactive mascot:** amber companion with idle, wave, listening, thinking, answering, and grounded-refuse states.
 - **Owner inbox:** grounded vs refused ledger, knowledge-gap suggestions, card editor, and embed jobs.
 - **Audience openers:** recruiter, investor, client, peer, and general presets with verified try-these asks.
-- **Cost ledger:** seed providers stay at `$0.00`; optional Groq or Gemini stay local-only behind the same contracts.
+- **Cost ledger:** seed providers stay at `$0.00`; optional Groq or Gemini stay behind the same contracts.
 
 ## Who this is for
 

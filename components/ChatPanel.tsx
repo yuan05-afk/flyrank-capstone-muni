@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AUDIENCE_OPENERS, type Audience, type AudienceSuggestion } from "@/config/audience.config";
 import { AudienceSelect } from "@/components/AudienceSelect";
+import { ContactSection } from "@/components/ContactSection";
 import { MuniMascot, type MuniState } from "@/components/MuniMascot";
 import { MotifReflect, MotifSend } from "@/components/Motifs";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -254,6 +255,7 @@ export function ChatPanel() {
       <SiteHeader
         links={[
           { href: "/", label: "Marketing" },
+          { href: "/#contact", label: "Contact" },
           { href: "/login", label: "Owner desk", primary: true },
         ]}
       />
@@ -317,6 +319,8 @@ export function ChatPanel() {
               ))}
             </div>
           </div>
+
+          <ContactSection compact />
         </aside>
 
         <section className="surface flex min-h-[62vh] flex-col p-4 sm:min-h-[70vh] sm:p-5">

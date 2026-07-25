@@ -47,7 +47,7 @@ export class SeedChatProvider implements ChatProvider {
     if (input.cards.length === 0) {
       return groundedAnswerSchema.parse({
         answer:
-          "I do not have verified knowledge for that yet. Ask the owner to add a knowledge card, or reach out through the contact section.",
+          "I do not have verified knowledge for that yet. Ask the owner to add a knowledge card, leave a note in chat, or open the Contact section on the Muni site.",
         citations: [],
         confidence: 0.2,
         grounded: false,

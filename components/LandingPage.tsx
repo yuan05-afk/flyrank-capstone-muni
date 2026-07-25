@@ -3,23 +3,13 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { BrandLockup, BrandMark } from "@/components/BrandMark";
+import { ContactSection } from "@/components/ContactSection";
 import { HeroAnswerCard } from "@/components/HeroAnswerCard";
+import { MarqueeBand } from "@/components/MarqueeBand";
 import { MuniMascot } from "@/components/MuniMascot";
 import { MotifArrow, MotifCards, MotifCite, MotifGuard } from "@/components/Motifs";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useLenis } from "@/hooks/useLenis";
-
-const tags = [
-  "kind:bio",
-  "kind:project",
-  "citation:lens",
-  "status:grounded",
-  "status:refused",
-  "muni-muni",
-  "policy:v1",
-  "seed provider",
-  "groq optional",
-];
 
 const features = [
   {
@@ -49,6 +39,7 @@ export function LandingPage() {
     <main className="hero-mesh">
       <SiteHeader
         links={[
+          { href: "#contact", label: "Contact" },
           { href: "/login", label: "Owner desk" },
           { href: "/chat", label: "Chat with Muni", primary: true },
         ]}
@@ -130,15 +121,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <div className="marquee" aria-hidden="true">
-        <div className="marquee-track">
-          {[...tags, ...tags].map((tag, i) => (
-            <span key={`${tag}-${i}`} className="tag-chip">
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
+      <MarqueeBand />
 
       <section className="chapter">
         <div className="chapter-head">
@@ -235,9 +218,9 @@ export function LandingPage() {
       <section className="chapter">
         <div className="grid-3">
           {[
-            ["9", "seed knowledge cards"],
+            ["10", "verified knowledge cards"],
+            ["4", "live Capstone demos"],
             ["0.80+", "eval floors"],
-            ["$0.00", "seed provider cost"],
           ].map(([v, l], index) => (
             <motion.div
               key={l}
@@ -254,6 +237,8 @@ export function LandingPage() {
           ))}
         </div>
       </section>
+
+      <ContactSection />
 
       <section className="chapter">
         <motion.div

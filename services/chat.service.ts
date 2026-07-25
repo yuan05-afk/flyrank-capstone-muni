@@ -12,7 +12,7 @@ import { guardGrounding, isSocialOpener, topicalOverlap } from "./guard.service"
 import { retrieveService } from "./retrieve.service";
 
 const REFUSAL =
-  "I do not have verified knowledge for that. I only speak from Yuan's knowledge cards. Leave a note in the owner inbox or use the contact section.";
+  "I do not have verified knowledge for that. I only speak from Yuan's knowledge cards. Leave a note in chat or open the Contact section on the Muni site.";
 
 function socialReply(audience?: string) {
   const key = (audience || "general") as Audience;

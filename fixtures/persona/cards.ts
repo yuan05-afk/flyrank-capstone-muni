@@ -68,9 +68,9 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "faq",
     title: "How can someone contact Yuan?",
-    body: "Visitors can use the contact section on the Muni site or leave a question in chat. If Muni lacks grounding for a topic, it offers to connect the visitor with Yuan directly.",
+    body: "Use the Contact section on the Muni site (https://muni-flyrank.vercel.app/#contact): open Yuan's GitHub at https://github.com/yuan05-afk, leave a note in chat so it lands in the owner inbox, or open any live Capstone demo (Checkpoint, Lens, Broadcast, Muni).",
     sourceId: "persona.faq.contact",
-    tags: ["contact", "outreach"],
+    tags: ["contact", "outreach", "github"],
   },
   {
     kind: "link",
