@@ -59,6 +59,10 @@ export class SeedChatProvider implements ChatProvider {
     // Strip URLs before sentence-splitting so we do not cut a link at its dot (e.g. .vercel.app).
     const primaryNoUrls = primary.body
       .replace(/\s*https?:\/\/[^\s<]+[^\s.,!?)<]*/g, "")
+      // Drop dangling labels left behind once their URL is removed (e.g. "Live demo:").
+      .replace(/\b(Live demo|Live links|Demo|Live site)\s*:?\s*(?=[.\s]|$)/gi, "")
+      .replace(/\s*[:;]\s*\./g, ".")
+      .replace(/\.{2,}/g, ".")
       .replace(/\s{2,}/g, " ")
       .replace(/\s+\(/g, " (")
       .trim();
