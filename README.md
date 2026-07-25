@@ -14,6 +14,8 @@ then speak. The Grounding Guard is the product center, not a footnote.
 
 ![Muni landing hero with waving companion mascot, Grounding Guard card, and two-row Capstone marquee](docs/images/shots/muni-landing.png)
 
+![Muni Contact section with GitHub, chat notes, and live Capstone demos](docs/images/shots/muni-contact.png)
+
 ## Why Muni
 
 - **Verified knowledge cards:** bio, projects, skills, FAQ, and links are editable facts, not prompt folklore.

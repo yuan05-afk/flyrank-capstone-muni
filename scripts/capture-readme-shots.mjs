@@ -52,11 +52,31 @@ const page = await context.newPage();
 console.log("landing...");
 await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
 await waitReady(page);
+// Pull the two-row marquee into frame under the hero so the README shot shows the new band.
+await page.evaluate(() => {
+  const band = document.querySelector(".muni-marquee");
+  if (band) band.scrollIntoView({ block: "end" });
+});
+await sleep(800);
 await page.screenshot({
   path: path.join(OUT, "muni-landing.png"),
   fullPage: false,
 });
 console.log("saved muni-landing.png");
+
+console.log("contact...");
+await page.goto(`${BASE}/#contact`, { waitUntil: "domcontentloaded" });
+await waitReady(page);
+await page.evaluate(() => {
+  const section = document.querySelector("#contact");
+  if (section) section.scrollIntoView({ block: "start" });
+});
+await sleep(900);
+await page.screenshot({
+  path: path.join(OUT, "muni-contact.png"),
+  fullPage: false,
+});
+console.log("saved muni-contact.png");
 
 console.log("chat grounded...");
 await page.goto(`${BASE}/chat`, { waitUntil: "domcontentloaded" });
