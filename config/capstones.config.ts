@@ -16,7 +16,7 @@ export const CAPSTONE_LINKS: CapstoneLink[] = [
     tagline: "Embeddable widget and lead-capture platform with tenant isolation and geo failover.",
     url:
       process.env.NEXT_PUBLIC_CAPSTONE_CHECKPOINT_URL ||
-      "https://flyrank-capstone-checkpoint.vercel.app",
+      "https://checkpoint-flyrank.vercel.app",
   },
   {
     id: "lens",
@@ -24,7 +24,7 @@ export const CAPSTONE_LINKS: CapstoneLink[] = [
     tagline: "Image relevance and auto-tagging with a mismatch guard that refuses wrong pairings.",
     url:
       process.env.NEXT_PUBLIC_CAPSTONE_LENS_URL ||
-      "https://flyrank-capstone-lens.vercel.app",
+      "https://lens-flyrank.vercel.app",
   },
   {
     id: "broadcast",
@@ -32,7 +32,7 @@ export const CAPSTONE_LINKS: CapstoneLink[] = [
     tagline: "Social media studio for platform-aware captions and image variants with durable jobs.",
     url:
       process.env.NEXT_PUBLIC_CAPSTONE_BROADCAST_URL ||
-      "https://flyrank-capstone-broadcast.vercel.app",
+      "https://broadcast-flyrank.vercel.app",
   },
   {
     id: "muni",
@@ -40,7 +40,7 @@ export const CAPSTONE_LINKS: CapstoneLink[] = [
     tagline: "This grounded personal agent that cites verified knowledge and refuses without evidence.",
     url:
       process.env.NEXT_PUBLIC_APP_URL ||
-      "https://flyrank-capstone-muni.vercel.app",
+      "https://muni-flyrank.vercel.app",
   },
 ];
 

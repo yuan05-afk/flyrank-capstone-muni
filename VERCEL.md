@@ -34,12 +34,12 @@ When your four Capstone apps are live on Vercel, set these in **Settings → Env
 
 | Variable | Purpose |
 |---|---|
-| `NEXT_PUBLIC_APP_URL` | This Muni deployment (e.g. `https://your-muni.vercel.app`) |
-| `NEXT_PUBLIC_CAPSTONE_CHECKPOINT_URL` | Checkpoint Signal Capstone |
-| `NEXT_PUBLIC_CAPSTONE_LENS_URL` | Lens (Image Relevance) Capstone |
-| `NEXT_PUBLIC_CAPSTONE_BROADCAST_URL` | Broadcast (Social Media Studio) Capstone |
+| `NEXT_PUBLIC_APP_URL` | `https://muni-flyrank.vercel.app` |
+| `NEXT_PUBLIC_CAPSTONE_CHECKPOINT_URL` | `https://checkpoint-flyrank.vercel.app` |
+| `NEXT_PUBLIC_CAPSTONE_LENS_URL` | `https://lens-flyrank.vercel.app` |
+| `NEXT_PUBLIC_CAPSTONE_BROADCAST_URL` | `https://broadcast-flyrank.vercel.app` |
 
-These slots are reserved for a follow-up where knowledge cards and chat answers can cite live Capstone links. The app runs without them today.
+These drive Capstone hyperlinks in knowledge cards and chat answers.
 
 ## 5. Schema, seed, and embeddings (after first deploy)
 
