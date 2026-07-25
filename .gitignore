@@ -9,3 +9,5 @@ dist
 tmp-*.json
 cookies.txt
 tsconfig.tsbuildinfo
+.vercel
+.env*
