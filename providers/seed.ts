@@ -62,25 +62,22 @@ export class SeedChatProvider implements ChatProvider {
       .replace(/\s{2,}/g, " ")
       .replace(/\s+\(/g, " (")
       .trim();
-    const quote = primaryNoUrls.split(/[.!?]/)[0]?.trim() || primaryNoUrls.slice(0, 140);
+    // Lead with the first one or two real sentences so the reply reads like Muni, not a template.
+    const sentences = primaryNoUrls.split(/(?<=[.!?])\s+/).filter(Boolean);
+    const lead = (sentences.slice(0, 2).join(" ") || primaryNoUrls.slice(0, 200)).trim();
 
     // Collect any live links referenced by the cited cards so they render in full.
     const links: string[] = [];
     for (const card of support) {
       const urls = card.body.match(URL_PATTERN) ?? [];
       for (const url of urls) {
-        const entry = `${card.title}: ${url}`;
-        if (!links.includes(entry)) links.push(entry);
+        if (!links.includes(url)) links.push(url);
       }
     }
 
     const answer = [
-      `From verified knowledge: ${quote}.`,
-      support.length > 1 ? ` Related card: ${support[1].title}.` : "",
-      input.audience && input.audience !== "general"
-        ? ` Tailored for a ${input.audience} conversation.`
-        : "",
-      links.length ? ` Live links: ${links.join(" | ")}` : "",
+      lead.endsWith(".") || lead.endsWith("!") || lead.endsWith("?") ? lead : `${lead}.`,
+      links.length ? ` You can open it live here: ${links.join(" | ")}` : "",
     ].join("");
 
     return groundedAnswerSchema.parse({

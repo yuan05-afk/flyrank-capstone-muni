@@ -2,6 +2,7 @@ import { AUDIENCE_OPENERS, type Audience } from "@/config/audience.config";
 import { PRICING } from "@/config/pricing.config";
 import { GUARD_CONFIG, GROUNDING_POLICY_ID } from "@/config/guard.config";
 import { chatProvider } from "@/providers/registry";
+import { SeedChatProvider } from "@/providers/seed";
 import {
   answersRepository,
   conversationRepository,
@@ -98,11 +99,26 @@ export const chatService = {
     const overlap = input.focusCardId ? 1 : topicalOverlap(input.question, corpus);
 
     const provider = chatProvider();
-    let draft = await provider.answer({
-      question: input.question,
-      cards,
-      audience: input.audience,
-    });
+    let providerId = provider.id;
+    let draft;
+    try {
+      draft = await provider.answer({
+        question: input.question,
+        cards,
+        audience: input.audience,
+      });
+    } catch (error) {
+      // Never hard-fail on Vercel: if the live provider (e.g. Groq) times out or
+      // errors, fall back to the deterministic seed provider so chat still answers.
+      console.error("chat provider failed, falling back to seed:", error);
+      const fallback = new SeedChatProvider();
+      providerId = fallback.id;
+      draft = await fallback.answer({
+        question: input.question,
+        cards,
+        audience: input.audience,
+      });
+    }
 
     if (input.focusCardId) {
       const focused = cards.find((card) => card.id === input.focusCardId);
@@ -177,10 +193,10 @@ export const chatService = {
 
     await conversationRepository.addMessage(conversationId, "assistant", finalAnswer);
 
-    const pricing = PRICING[provider.id as keyof typeof PRICING] ?? { usdPerUnit: 0 };
+    const pricing = PRICING[providerId as keyof typeof PRICING] ?? { usdPerUnit: 0 };
     await costsRepository.create({
       kind: "chat",
-      model: provider.id,
+      model: providerId,
       units: 1,
       unitCostUsd: pricing.usdPerUnit,
       totalUsd: pricing.usdPerUnit,
@@ -197,7 +213,7 @@ export const chatService = {
         title: item.card.title,
         score: item.score,
       })),
-      provider: provider.id,
+      provider: providerId,
     };
   },
 };

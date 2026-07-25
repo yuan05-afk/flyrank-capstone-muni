@@ -15,7 +15,17 @@ type InboxSnapshot = {
     citationsJson: string;
   }>;
   cards: Array<{ id: string; kind: string; title: string; body: string }>;
-  stats: { grounded: number; guarded: number; total: number; cards: number; embedded: number };
+  stats: {
+    grounded: number;
+    guarded: number;
+    refused: number;
+    social: number;
+    total: number;
+    groundedRate: number;
+    avgConfidence: number;
+    cards: number;
+    embedded: number;
+  };
   gaps: Array<{ question: string; suggestion: string; reason: string | null }>;
 };
 
@@ -130,10 +140,13 @@ export function DeskClient() {
   }
 
   const stats = [
-    [String(inbox.stats.cards), "knowledge cards"],
-    [String(inbox.stats.grounded), "grounded answers"],
-    [`$${(costs?.totalUsd ?? 0).toFixed(4)}`, `${(costs?.chatCalls ?? 0) + (costs?.embeddingCalls ?? 0)} tracked calls`],
-    [evaluation ? `${(evaluation.refusalRecall * 100).toFixed(0)}%` : "...", "refusal recall"],
+    [String(inbox.stats.cards), `${inbox.stats.embedded} embedded knowledge cards`],
+    [String(inbox.stats.grounded), `grounded of ${inbox.stats.total} decisions`],
+    [`${(inbox.stats.groundedRate * 100).toFixed(0)}%`, `grounded rate · ${inbox.stats.refused} refused`],
+    [
+      evaluation ? `${(evaluation.refusalRecall * 100).toFixed(0)}%` : "...",
+      evaluation ? "refusal recall (live eval)" : "scoring live eval...",
+    ],
   ] as const;
 
   return (

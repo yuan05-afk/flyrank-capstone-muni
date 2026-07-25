@@ -8,6 +8,8 @@ function apiKey() {
 }
 
 const CHAT_MODEL = process.env.GROQ_CHAT_MODEL || "llama-3.3-70b-versatile";
+const REQUEST_TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS || 9000);
+const MAX_TOKENS = Number(process.env.GROQ_MAX_TOKENS || 380);
 
 function extractJson(text: string): unknown {
   const trimmed = text.trim();
@@ -45,35 +47,53 @@ export class GroqChatProvider implements ChatProvider {
       .map((card) => `[${card.id}] (${card.kind}) ${card.title}: ${card.body}`)
       .join("\n");
 
-    const system = `You are Muni, a grounded personal AI for Yuan.
-Answer ONLY using the provided knowledge cards. Never invent facts.
-Return a single JSON object with keys:
-- answer: string (clear, natural prose; 2-5 sentences when grounded)
-- citations: array of {cardId, title, quote?} using only card ids from the cards list
-- confidence: number from 0 to 1
-- grounded: boolean
-If the cards do not support the question, set grounded=false, confidence <= 0.3, citations=[], and refuse honestly.
-Audience tone: ${input.audience || "general"}`;
+    const system = `You are Muni, Yuan's grounded personal AI. "Muni" is Filipino for "muni-muni" (thoughtful reflection): think first, speak only from verified knowledge.
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: CHAT_MODEL,
-        temperature: 0.2,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: system },
-          {
-            role: "user",
-            content: `Question: ${input.question}\n\nKnowledge cards:\n${context}`,
-          },
-        ],
-      }),
-    });
+Voice:
+- Warm, direct, and genuinely human. You are Muni speaking in the first person; talk about Yuan in the third person.
+- Be specific and concrete. Never sound like a generic chatbot. Do not say "As an AI", "Based on the provided information", or "the knowledge cards say".
+- Keep it tight: 2 to 4 sentences. Lead with the answer, not preamble.
+
+Grounding rules:
+- Use ONLY the provided knowledge cards. Never invent facts, numbers, dates, or links.
+- If a relevant card contains a URL, include that exact URL in the answer.
+- If the cards do not actually support the question, set grounded=false, confidence <= 0.3, citations=[], and refuse in one honest, friendly sentence that points to the contact section.
+
+Return ONE JSON object with keys:
+- answer: string
+- citations: array of {cardId, title, quote?} using only cardId values from the cards list
+- confidence: number from 0 to 1 (0.85+ only when the cards clearly answer it)
+- grounded: boolean
+Audience tone: ${input.audience || "general"}.`;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    let response: Response;
+    try {
+      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${apiKey()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: CHAT_MODEL,
+          temperature: 0.3,
+          max_tokens: MAX_TOKENS,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: system },
+            {
+              role: "user",
+              content: `Question: ${input.question}\n\nKnowledge cards:\n${context}`,
+            },
+          ],
+        }),
+      });
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (!response.ok) {
       const detail = await response.text();
