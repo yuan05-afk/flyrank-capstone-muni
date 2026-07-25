@@ -105,6 +105,32 @@ Audience tone: ${input.audience || "general"}.`;
     };
     const content = json.choices?.[0]?.message?.content;
     if (!content) throw new Error("Groq chat returned an empty message");
-    return groundedAnswerSchema.parse(extractJson(content));
+
+    // Smaller models (e.g. 8b) sometimes omit citation titles or invent card ids.
+    // Backfill titles from the known cards and drop anything not in the card set so
+    // the schema validates instead of falling back to the seed provider.
+    const raw = extractJson(content) as Record<string, unknown>;
+    const titleById = new Map(input.cards.map((card) => [card.id, card.title] as const));
+    if (Array.isArray(raw.citations)) {
+      raw.citations = (raw.citations as Array<Record<string, unknown>>)
+        .map((citation) => {
+          const cardId =
+            typeof citation.cardId === "string" ? citation.cardId : String(citation.cardId ?? "");
+          const title =
+            typeof citation.title === "string" && citation.title.length > 0
+              ? citation.title
+              : titleById.get(cardId);
+          if (!title) return null;
+          return {
+            cardId,
+            title,
+            quote: typeof citation.quote === "string" ? citation.quote.slice(0, 400) : undefined,
+          };
+        })
+        .filter((citation): citation is NonNullable<typeof citation> => citation !== null)
+        .filter((citation) => titleById.has(citation.cardId));
+    }
+
+    return groundedAnswerSchema.parse(raw);
   }
 }
