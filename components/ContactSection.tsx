@@ -1,13 +1,20 @@
 "use client";
 
 import { CAPSTONE_LINKS } from "@/config/capstones.config";
-import { MotifArrow, MotifCite } from "@/components/Motifs";
+import { MotifArrow, MotifGitHub, MotifNote } from "@/components/Motifs";
 
 const GITHUB_URL = "https://github.com/yuan05-afk";
 
+const FAVICON: Record<string, string> = {
+  checkpoint: "/capstones/checkpoint.svg",
+  lens: "/capstones/lens.svg",
+  broadcast: "/capstones/broadcast.svg",
+  muni: "/capstones/muni.svg",
+};
+
 /**
  * Real contact surface Muni's answers can point to.
- * Chat used to mention a "contact section" that did not exist on the page.
+ * Each Capstone card uses that product's live favicon and opens its domain.
  */
 export function ContactSection({ compact = false }: { compact?: boolean }) {
   if (compact) {
@@ -23,6 +30,9 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
             rel="noopener noreferrer"
             className="surface contact-card focus-ring !p-3"
           >
+            <span className="contact-icon contact-icon--sm">
+              <MotifGitHub className="h-6 w-6" />
+            </span>
             <strong className="!text-sm">GitHub · yuan05-afk</strong>
             <p className="text-xs leading-relaxed text-muted">Capstone repos and demos.</p>
             <span className="contact-cta !pt-1 text-xs">
@@ -30,6 +40,9 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
             </span>
           </a>
           <a href="/#contact" className="surface contact-card focus-ring !p-3">
+            <span className="contact-icon contact-icon--sm">
+              <img src="/capstones/muni.svg" alt="" width={24} height={24} />
+            </span>
             <strong className="!text-sm">Full contact + live Capstones</strong>
             <p className="text-xs leading-relaxed text-muted">
               Checkpoint, Lens, Broadcast, and Muni demos.
@@ -63,8 +76,8 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
           rel="noopener noreferrer"
           className="surface contact-card focus-ring"
         >
-          <span className="motif-well">
-            <MotifCite />
+          <span className="contact-icon">
+            <MotifGitHub />
           </span>
           <strong>GitHub</strong>
           <p className="text-sm leading-relaxed text-muted">
@@ -76,8 +89,8 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
         </a>
 
         <a href="/chat" className="surface contact-card focus-ring">
-          <span className="motif-well">
-            <MotifCite />
+          <span className="contact-icon">
+            <MotifNote />
           </span>
           <strong>Leave a note</strong>
           <p className="text-sm leading-relaxed text-muted">
@@ -96,6 +109,14 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
             rel="noopener noreferrer"
             className="surface contact-card focus-ring"
           >
+            <span className="contact-icon">
+              <img
+                src={FAVICON[link.id] || "/favicon.svg"}
+                alt=""
+                width={28}
+                height={28}
+              />
+            </span>
             <span className="mono text-[10px] uppercase tracking-widest text-muni">{link.id}</span>
             <strong>{link.name}</strong>
             <p className="text-sm leading-relaxed text-muted">{link.tagline}</p>

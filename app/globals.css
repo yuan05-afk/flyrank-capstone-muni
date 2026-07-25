@@ -266,6 +266,26 @@ body {
   color: #92400e;
   transform: translateY(-1px);
 }
+.source-chip-kind {
+  margin-right: 6px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--fog);
+  color: #92400e;
+  font: 600 8px "IBM Plex Mono", monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.tag-chip-kind {
+  margin-right: 5px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--fog);
+  color: #92400e;
+  font: 600 8px "IBM Plex Mono", monospace;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
 .source-quote {
   width: 100%;
   margin: 2px 0 0;
@@ -415,6 +435,23 @@ body {
   border: 1px solid var(--line);
   background: var(--canvas);
   color: var(--muted);
+  text-decoration: none;
+}
+.muni-marquee-chip--link {
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+.muni-marquee-chip--link:hover,
+.muni-marquee-chip--link:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+  box-shadow: 0 8px 18px -12px rgba(16, 24, 40, 0.45);
+}
+.muni-marquee-favicon {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.28rem;
+  flex-shrink: 0;
 }
 .muni-marquee-chip--checkpoint {
   color: #0f766e;
@@ -686,6 +723,33 @@ th {
   transition: border-color .15s ease, transform .15s ease;
   text-decoration: none;
   color: inherit;
+}
+.contact-icon {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  background: var(--fog);
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  margin-bottom: 2px;
+  overflow: hidden;
+}
+.contact-icon img {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.4rem;
+  display: block;
+}
+.contact-icon--sm {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+}
+.contact-icon--sm img {
+  width: 1.35rem;
+  height: 1.35rem;
 }
 .contact-card:hover,
 .contact-card:focus-visible {

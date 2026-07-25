@@ -1,17 +1,27 @@
 "use client";
 
 import { useReducedMotion } from "framer-motion";
+import { CAPSTONE_LINKS, capstoneUrl } from "@/config/capstones.config";
 
 /**
  * Full-bleed two-row marquee under the hero (Broadcast pattern).
  * Opposite drift, soft L/R fade, pauses on hover, respects reduced motion.
- * Content is Muni's powers + Yuan's live Capstones - product, not decoration.
+ * Capstone chips use each product's live favicon and link to its domain.
  */
 
+type CapstoneTone = "checkpoint" | "lens" | "broadcast" | "muni";
+
 type Token =
-  | { kind: "capstone"; label: string; tone: "checkpoint" | "lens" | "broadcast" | "muni" }
+  | { kind: "capstone"; label: string; tone: CapstoneTone }
   | { kind: "status"; label: string; tone: "grounded" | "refused" | "thinking" }
   | { kind: "word"; label: string };
+
+const FAVICON: Record<CapstoneTone, string> = {
+  checkpoint: "/capstones/checkpoint.svg",
+  lens: "/capstones/lens.svg",
+  broadcast: "/capstones/broadcast.svg",
+  muni: "/capstones/muni.svg",
+};
 
 const ROW_A: Token[] = [
   { kind: "capstone", label: "Checkpoint", tone: "checkpoint" },
@@ -41,11 +51,34 @@ const ROW_B: Token[] = [
 
 function Chip({ token }: { token: Token }) {
   if (token.kind === "capstone") {
-    return (
-      <span className={`muni-marquee-chip muni-marquee-chip--${token.tone}`}>
-        <span className="muni-marquee-dot" aria-hidden="true" />
+    const href = capstoneUrl(token.tone) || CAPSTONE_LINKS.find((l) => l.id === token.tone)?.url;
+    const inner = (
+      <>
+        <img
+          className="muni-marquee-favicon"
+          src={FAVICON[token.tone]}
+          alt=""
+          width={16}
+          height={16}
+        />
         {token.label}
-      </span>
+      </>
+    );
+    if (!href) {
+      return (
+        <span className={`muni-marquee-chip muni-marquee-chip--${token.tone}`}>{inner}</span>
+      );
+    }
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`muni-marquee-chip muni-marquee-chip--${token.tone} muni-marquee-chip--link`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {inner}
+      </a>
     );
   }
   if (token.kind === "status") {

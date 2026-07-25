@@ -45,7 +45,18 @@ type EvalSummary = {
 
 function parseCitations(raw: string) {
   try {
-    return JSON.parse(raw || "[]") as Array<{ cardId: string; title: string }>;
+    const parsed = JSON.parse(raw || "[]") as Array<{
+      cardId: string;
+      title: string;
+      kind?: string;
+    }>;
+    // Defensive dedupe so historical rows never show the same card twice.
+    const seen = new Set<string>();
+    return parsed.filter((citation) => {
+      if (!citation?.cardId || seen.has(citation.cardId)) return false;
+      seen.add(citation.cardId);
+      return true;
+    });
   } catch {
     return [];
   }
@@ -228,6 +239,9 @@ export function DeskClient() {
                       <div className="flex max-w-52 flex-wrap gap-1">
                         {parseCitations(row.citationsJson).map((citation) => (
                           <span key={citation.cardId} className="tag-chip !px-2 !py-1">
+                            {citation.kind && (
+                              <span className="tag-chip-kind">{citation.kind}</span>
+                            )}
                             {citation.title}
                           </span>
                         ))}
@@ -282,6 +296,9 @@ export function DeskClient() {
                 <div className="mt-3 flex flex-wrap gap-1">
                   {parseCitations(row.citationsJson).map((citation) => (
                     <span key={citation.cardId} className="tag-chip !px-2 !py-1">
+                      {citation.kind && (
+                        <span className="tag-chip-kind">{citation.kind}</span>
+                      )}
                       {citation.title}
                     </span>
                   ))}

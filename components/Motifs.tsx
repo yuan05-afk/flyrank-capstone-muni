@@ -82,3 +82,29 @@ export function MotifSend({ className = "h-4 w-4" }: { className?: string }) {
     </svg>
   );
 }
+
+/** GitHub mark for the contact card (matches what the link opens). */
+export function MotifGitHub({ className = "h-7 w-7" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden>
+      <rect width="32" height="32" rx="9" fill="#101828" />
+      <path
+        fill="#FEF3C7"
+        d="M16 7.2c-4.9 0-8.8 4-8.8 8.8 0 3.9 2.5 7.2 6 8.3.4.1.6-.2.6-.4v-1.5c-2.4.5-2.9-1-2.9-1-.4-1-.9-1.3-.9-1.3-.8-.5.1-.5.1-.5.8.1 1.3.9 1.3.9.8 1.3 2 1 2.5.7.1-.6.3-.9.6-1.2-1.9-.2-4-1-4-4.3 0-1 .3-1.7.9-2.3-.1-.2-.4-1.1.1-2.3 0 0 .8-.2 2.5.9a8.6 8.6 0 0 1 4.5 0c1.7-1.1 2.5-.9 2.5-.9.5 1.2.2 2.1.1 2.3.6.6.9 1.4.9 2.3 0 3.3-2.1 4.1-4 4.3.3.3.6.8.6 1.6v2.4c0 .2.2.5.6.4 3.5-1.1 6-4.4 6-8.3 0-4.8-3.9-8.8-8.8-8.8Z"
+      />
+    </svg>
+  );
+}
+
+/** Chat / leave-a-note motif for the owner-inbox path. */
+export function MotifNote({ className = "h-7 w-7" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 32 32" fill="none" aria-hidden>
+      <rect x="5" y="6" width="22" height="16" rx="5" fill="#FEF3C7" stroke="#D97706" strokeWidth="1.6" />
+      <path d="M11 22.5 8.5 27l5-2.2" fill="#FEF3C7" stroke="#D97706" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="12.5" cy="14" r="1.35" fill="#101828" />
+      <circle cx="16.5" cy="14" r="1.35" fill="#101828" />
+      <circle cx="20.5" cy="14" r="1.35" fill="#F59E0B" />
+    </svg>
+  );
+}

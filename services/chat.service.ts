@@ -33,6 +33,41 @@ function parseCitations(raw: string | null | undefined) {
   }
 }
 
+type DraftCitation = { cardId: string; title: string; quote?: string | null };
+type FinalCitation = { cardId: string; title: string; kind?: string; quote?: string };
+
+/**
+ * Citations are the trust surface, so keep them clean and honest:
+ * - one chip per distinct knowledge card (no duplicates),
+ * - the chip label is always the real card title (models sometimes echo the
+ *   card kind like "bio" instead of "About Yuan"),
+ * - carry the card kind so the UI can show what type of source it is,
+ * - drop anything that does not map to a retrieved card.
+ */
+function normalizeCitations(
+  citations: DraftCitation[] | undefined,
+  cards: Array<{ id: string; title: string; kind?: string }>
+): FinalCitation[] {
+  if (!Array.isArray(citations) || citations.length === 0) return [];
+  const cardById = new Map(cards.map((card) => [card.id, card] as const));
+  const seen = new Set<string>();
+  const result: FinalCitation[] = [];
+  for (const citation of citations) {
+    const cardId = citation?.cardId;
+    if (!cardId || seen.has(cardId)) continue;
+    const card = cardById.get(cardId);
+    if (!card) continue;
+    seen.add(cardId);
+    result.push({
+      cardId,
+      title: card.title,
+      kind: card.kind,
+      quote: typeof citation.quote === "string" ? citation.quote : undefined,
+    });
+  }
+  return result.slice(0, 6);
+}
+
 export const chatService = {
   async ask(input: {
     question: string;
@@ -197,11 +232,15 @@ export const chatService = {
       };
     }
 
+    // Dedupe + relabel citations from the authoritative retrieved cards before
+    // the guard, storage, and UI ever see them.
+    const finalCitations = normalizeCitations(draft.citations, cards);
+
     const verdict = guardGrounding({
       bestScore: retrieved.bestScore,
       confidence: draft.confidence,
       retrievedCount: cards.length,
-      citationCardIds: draft.citations.map((citation) => citation.cardId),
+      citationCardIds: finalCitations.map((citation) => citation.cardId),
       allowedCardIds: cards.map((card) => card.id),
       topicalOverlap: overlap,
     });
@@ -216,7 +255,7 @@ export const chatService = {
       conversationId,
       question: input.question,
       answer: finalAnswer,
-      citationsJson: JSON.stringify(verdict.accepted ? draft.citations : []),
+      citationsJson: JSON.stringify(verdict.accepted ? finalCitations : []),
       grounded: verdict.accepted,
       status: verdict.status,
       guardReason: verdict.reason,
@@ -252,7 +291,7 @@ export const chatService = {
     return {
       conversationId,
       answer: record,
-      citations: verdict.accepted ? draft.citations : [],
+      citations: verdict.accepted ? finalCitations : [],
       retrieved: retrieved.candidates.map((item) => ({
         id: item.card.id,
         title: item.card.title,

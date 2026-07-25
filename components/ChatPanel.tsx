@@ -14,9 +14,20 @@ type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   status?: string;
-  citations?: Array<{ cardId: string; title: string; quote?: string }>;
+  citations?: Array<{ cardId: string; title: string; kind?: string; quote?: string }>;
   pending?: boolean;
 };
+
+/** Defensive: never render the same knowledge card twice, even for older rows. */
+function dedupeCitations<T extends { cardId: string }>(citations?: T[]): T[] {
+  if (!citations?.length) return [];
+  const seen = new Set<string>();
+  return citations.filter((citation) => {
+    if (!citation?.cardId || seen.has(citation.cardId)) return false;
+    seen.add(citation.cardId);
+    return true;
+  });
+}
 
 function uid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -398,13 +409,16 @@ export function ChatPanel() {
                     </span>
                   )}
 
-                  {!!message.citations?.length && (
+                  {(() => {
+                    const citations = dedupeCitations(message.citations);
+                    if (!citations.length) return null;
+                    return (
                     <div className="mt-3 space-y-2">
                       <p className="mono text-[9px] uppercase tracking-[0.14em] text-muted">
                         cited sources · tap to inspect
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {message.citations.map((citation) => {
+                        {citations.map((citation) => {
                           const key = `${message.id}:${citation.cardId}`;
                           const open = openCitation === key;
                           return (
@@ -417,13 +431,16 @@ export function ChatPanel() {
                                 setOpenCitation((current) => (current === key ? null : key))
                               }
                             >
+                              {citation.kind && (
+                                <span className="source-chip-kind">{citation.kind}</span>
+                              )}
                               {citation.title}
                             </button>
                           );
                         })}
                       </div>
                       <AnimatePresence>
-                        {message.citations.map((citation) => {
+                        {citations.map((citation) => {
                           const key = `${message.id}:${citation.cardId}`;
                           if (openCitation !== key) return null;
                           return (
@@ -457,7 +474,8 @@ export function ChatPanel() {
                         })}
                       </AnimatePresence>
                     </div>
-                  )}
+                    );
+                  })()}
                 </motion.div>
               ))}
             </AnimatePresence>
