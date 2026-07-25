@@ -18,6 +18,34 @@ type ChatMessage = {
   pending?: boolean;
 };
 
+const CHAT_SESSION_KEY = "muni-chat-session-v1";
+
+type ChatSession = {
+  conversationId?: string;
+  audience?: Audience;
+  messages?: ChatMessage[];
+};
+
+function loadChatSession(): ChatSession | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(CHAT_SESSION_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as ChatSession;
+  } catch {
+    return null;
+  }
+}
+
+function saveChatSession(session: ChatSession) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(CHAT_SESSION_KEY, JSON.stringify(session));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
 /** Defensive: never render the same knowledge card twice, even for older rows. */
 function dedupeCitations<T extends { cardId: string }>(citations?: T[]): T[] {
   if (!citations?.length) return [];
@@ -84,10 +112,26 @@ export function ChatPanel() {
   const [phase, setPhase] = useState<"idle" | "listening" | "thinking" | "typing">("idle");
   const [muniState, setMuniState] = useState<MuniState>("wave");
   const [openCitation, setOpenCitation] = useState<string | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const opener = useMemo(() => AUDIENCE_OPENERS[audience], [audience]);
+
+  useEffect(() => {
+    const saved = loadChatSession();
+    if (saved) {
+      if (saved.audience && saved.audience in AUDIENCE_OPENERS) {
+        setAudience(saved.audience);
+      }
+      if (saved.conversationId) setConversationId(saved.conversationId);
+      if (Array.isArray(saved.messages) && saved.messages.length > 0) {
+        setMessages(saved.messages.filter((message) => !message.pending));
+        setMuniState("idle");
+      }
+    }
+    setSessionReady(true);
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setBooting(false), reduce ? 120 : 700);
@@ -95,10 +139,31 @@ export function ChatPanel() {
   }, [reduce]);
 
   useEffect(() => {
+    if (!sessionReady) return;
+    saveChatSession({
+      conversationId,
+      audience,
+      messages: messages.filter((message) => !message.pending),
+    });
+  }, [conversationId, audience, messages, sessionReady]);
+
+  useEffect(() => {
     const node = scrollerRef.current;
     if (!node) return;
     node.scrollTo({ top: node.scrollHeight, behavior: reduce ? "auto" : "smooth" });
   }, [messages, phase, reduce]);
+
+  function startNewChat() {
+    if (busy) return;
+    setConversationId(undefined);
+    setMessages([]);
+    setOpenCitation(null);
+    setQuestion("");
+    setPhase("idle");
+    setMuniState("wave");
+    window.sessionStorage.removeItem(CHAT_SESSION_KEY);
+    inputRef.current?.focus();
+  }
 
   async function ask(raw: string, options?: { focusCardId?: string }) {
     const asked = raw.trim();
@@ -238,7 +303,7 @@ export function ChatPanel() {
             { href: "/login", label: "Owner desk", primary: true },
           ]}
         />
-        <div className="chat-shell mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-7">
+        <div className="chat-shell mx-auto max-w-6xl px-4 sm:px-5">
           <aside className="surface space-y-4 p-5">
             <SkeletonBlock className="mx-auto h-36 w-36 !rounded-full" />
             <SkeletonBlock className="h-12 w-full" />
@@ -275,7 +340,7 @@ export function ChatPanel() {
         initial={reduce ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="chat-shell mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-7"
+        className="chat-shell mx-auto max-w-6xl px-4 sm:px-5"
       >
         <aside className="surface chat-aside p-4 sm:p-5">
           <MuniMascot state={muniState} className="relative mx-auto h-32 w-32 sm:h-36 sm:w-36" />
@@ -334,39 +399,51 @@ export function ChatPanel() {
           <ContactSection compact />
         </aside>
 
-        <section className="surface flex min-h-[62vh] flex-col p-4 sm:min-h-[70vh] sm:p-5">
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-4">
+        <section className="surface chat-main p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
             <div className="min-w-0">
               <p className="eyebrow">
                 <span className="muni-dot" /> grounded desk
               </p>
-              <h1 className="mt-2 font-display text-xl font-semibold tracking-tight sm:text-2xl">
+              <h1 className="mt-1.5 font-display text-xl font-semibold tracking-tight sm:text-2xl">
                 Chat with Muni
               </h1>
               <p className="mt-1 max-w-xl text-sm text-muted">
                 Answers come from verified knowledge cards. Weak grounding means an honest refuse.
               </p>
             </div>
-            <div className="rounded-2xl border border-line bg-canvas/80 px-3 py-2 text-right">
-              <p className="mono text-[9px] uppercase tracking-[0.12em] text-muted">Audience</p>
-              <p className="font-display text-sm font-semibold">{opener.label}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="rounded-2xl border border-line bg-canvas/80 px-3 py-2 text-right">
+                <p className="mono text-[9px] uppercase tracking-[0.12em] text-muted">Audience</p>
+                <p className="font-display text-sm font-semibold">{opener.label}</p>
+              </div>
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  className="btn-secondary !min-h-9 !py-1.5 !text-xs"
+                  disabled={busy}
+                  onClick={startNewChat}
+                >
+                  New chat
+                </button>
+              )}
             </div>
           </div>
 
-          <div ref={scrollerRef} className="signal-scroll flex-1 space-y-3 overflow-y-auto pr-1">
+          <div ref={scrollerRef} className="signal-scroll chat-thread space-y-3 pr-1">
             {messages.length === 0 && (
               <motion.div
                 initial={reduce ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="empty-stage"
               >
-                <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-xl border border-line bg-fog">
-                  <MotifReflect className="h-10 w-10" />
+                <div className="mx-auto mb-2 grid h-11 w-11 place-items-center rounded-xl border border-line bg-fog">
+                  <MotifReflect className="h-8 w-8" />
                 </div>
-                <p className="font-display text-base font-semibold sm:text-lg">Start with a verified ask</p>
-                <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-                  Try Muni, Lens, stack, or Capstone projects. Use the refuse demo to watch the
-                  Grounding Guard protect the knowledge base.
+                <p className="font-display text-sm font-semibold sm:text-base">Start with a verified ask</p>
+                <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-muted sm:text-sm">
+                  Try Muni, Lens, stack, or Capstone projects. If Muni refuses, keep typing - that
+                  leaves a note in Yuan&apos;s owner inbox.
                 </p>
               </motion.div>
             )}
@@ -481,7 +558,7 @@ export function ChatPanel() {
             </AnimatePresence>
           </div>
 
-          <form onSubmit={onSubmit} className="composer mt-4">
+          <form onSubmit={onSubmit} className="composer chat-composer">
             <div className="flex items-center gap-2 px-1 pb-2">
               <span className={`status-dot ${phase === "idle" ? "is-ready" : "is-live"}`} />
               <span className="mono text-[10px] uppercase tracking-[0.12em] text-muted">
@@ -509,7 +586,7 @@ export function ChatPanel() {
                 onBlur={() => {
                   if (!busy && !question.trim()) {
                     setPhase("idle");
-                    setMuniState("idle");
+                    setMuniState(messages.length > 0 ? "idle" : "wave");
                   }
                 }}
                 placeholder="Ask Muni something grounded..."
@@ -523,6 +600,9 @@ export function ChatPanel() {
                 {busy ? <TypingDots /> : <MotifSend />}
               </button>
             </div>
+            <p className="mt-2 px-1 text-[11px] leading-relaxed text-muted">
+              Tip: a refused ask still leaves a note in Yuan&apos;s owner inbox as a knowledge gap.
+            </p>
           </form>
         </section>
       </motion.div>

@@ -1023,14 +1023,6 @@ th {
   40% { transform: translateY(-3px); opacity: 1; }
 }
 
-.empty-stage {
-  border-radius: 16px;
-  border: 1px dashed var(--line);
-  background: #fff;
-  padding: clamp(28px, 5vw, 40px) 24px;
-  text-align: center;
-}
-
 .nav-toggle {
   width: 42px;
   height: 42px;
@@ -1051,17 +1043,63 @@ th {
 }
 
 .desk-cards { display: none; }
-.chat-shell { display: grid; gap: 16px; }
+.chat-shell {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
 .chat-aside {
   position: relative;
   z-index: 20;
   overflow: visible;
+}
+.chat-main {
+  display: flex;
+  flex-direction: column;
+  /* Keep the composer near the viewport on laptops; avoid a tall empty well. */
+  min-height: min(34rem, calc(100svh - 7.5rem));
+  max-height: none;
+}
+.chat-thread {
+  flex: 1 1 auto;
+  min-height: 10rem;
+  max-height: min(22rem, 42svh);
+  overflow-y: auto;
+}
+.chat-composer {
+  flex-shrink: 0;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+.empty-stage {
+  border-radius: 16px;
+  border: 1px dashed var(--line);
+  background: #fff;
+  padding: 18px 16px;
+  text-align: center;
 }
 
 @media (min-width: 1024px) {
   .chat-shell {
     grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
     gap: 20px;
+    height: calc(100svh - 56px);
+    max-height: calc(100svh - 56px);
+    padding-block: 1rem;
+    overflow: hidden;
+  }
+  .chat-aside {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+  .chat-main {
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+  }
+  .chat-thread {
+    max-height: none;
   }
 }
 
