@@ -43,6 +43,8 @@ export class SeedChatProvider implements ChatProvider {
     question: string;
     cards: Array<{ id: string; title: string; body: string; kind: string }>;
     audience?: string;
+    history?: Array<{ role: "user" | "assistant"; content: string }>;
+    followUp?: boolean;
   }): Promise<GroundedAnswer> {
     if (input.cards.length === 0) {
       return groundedAnswerSchema.parse({
@@ -55,7 +57,7 @@ export class SeedChatProvider implements ChatProvider {
     }
 
     const primary = input.cards[0];
-    const support = input.cards.slice(0, 2);
+    const support = input.cards.slice(0, input.followUp ? 3 : 2);
     // Strip URLs before sentence-splitting so we do not cut a link at its dot (e.g. .vercel.app).
     const primaryNoUrls = primary.body
       .replace(/\s*https?:\/\/[^\s<]+[^\s.,!?)<]*/g, "")
@@ -66,9 +68,18 @@ export class SeedChatProvider implements ChatProvider {
       .replace(/\s{2,}/g, " ")
       .replace(/\s+\(/g, " (")
       .trim();
-    // Lead with the first one or two real sentences so the reply reads like Muni, not a template.
+    // Lead with the first two or three real sentences so follow-ups can go deeper.
+    const sentenceBudget = input.followUp ? 3 : 2;
     const sentences = primaryNoUrls.split(/(?<=[.!?])\s+/).filter(Boolean);
-    const lead = (sentences.slice(0, 2).join(" ") || primaryNoUrls.slice(0, 200)).trim();
+    const lead = (sentences.slice(0, sentenceBudget).join(" ") || primaryNoUrls.slice(0, 240)).trim();
+    const supportExtra =
+      input.followUp && support[1]
+        ? ` ${support[1].body
+            .replace(/\s*https?:\/\/[^\s<]+[^\s.,!?)<]*/g, "")
+            .replace(/\s{2,}/g, " ")
+            .trim()
+            .split(/(?<=[.!?])\s+/)[0] || ""}`
+        : "";
 
     // Collect any live links referenced by the cited cards so they render in full.
     const links: string[] = [];
@@ -81,6 +92,7 @@ export class SeedChatProvider implements ChatProvider {
 
     const answer = [
       lead.endsWith(".") || lead.endsWith("!") || lead.endsWith("?") ? lead : `${lead}.`,
+      supportExtra.trim() ? ` ${supportExtra.trim().replace(/\.*$/, ".")}` : "",
       links.length ? ` You can open it live here: ${links.join(" | ")}` : "",
     ].join("");
 

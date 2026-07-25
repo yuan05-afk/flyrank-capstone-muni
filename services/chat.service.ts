@@ -9,6 +9,11 @@ import {
   costsRepository,
 } from "@/repositories";
 import { guardGrounding, isSocialOpener, topicalOverlap } from "./guard.service";
+import {
+  expandRetrievalQuery,
+  formatHistoryForProvider,
+  type PriorTurn,
+} from "./memory.service";
 import { retrieveService } from "./retrieve.service";
 
 const REFUSAL =
@@ -18,6 +23,14 @@ function socialReply(audience?: string) {
   const key = (audience || "general") as Audience;
   const opener = AUDIENCE_OPENERS[key] ?? AUDIENCE_OPENERS.general;
   return `Hi. I am Muni. ${opener.opener} I only answer from verified knowledge cards, so ask about Yuan's Capstones, stack, Lens, Broadcast, or how to get in touch.`;
+}
+
+function parseCitations(raw: string | null | undefined) {
+  try {
+    return JSON.parse(raw || "[]") as Array<{ cardId: string; title: string }>;
+  } catch {
+    return [];
+  }
 }
 
 export const chatService = {
@@ -32,6 +45,29 @@ export const chatService = {
       const conversation = await conversationRepository.create(input.audience || "general");
       conversationId = conversation.id;
     }
+
+    // Load prior turns before appending the new user message so follow-ups
+    // can expand retrieval against the last grounded topic.
+    const priorConversation = await conversationRepository.findById(conversationId);
+    const priorMessages = priorConversation?.messages ?? [];
+    const priorAnswerRow = await answersRepository.latestForConversation(conversationId);
+    const priorCitations = parseCitations(priorAnswerRow?.citationsJson);
+    const priorTurn: PriorTurn | null = priorAnswerRow
+      ? {
+          question: priorAnswerRow.question,
+          answer: priorAnswerRow.answer,
+          status: priorAnswerRow.status,
+          citationTitles: priorCitations.map((citation) => citation.title),
+          citationCardIds: priorCitations.map((citation) => citation.cardId),
+        }
+      : null;
+    const recentUserQuestions = priorMessages
+      .filter((message) => message.role === "user")
+      .map((message) => message.content);
+
+    const memory = expandRetrievalQuery(input.question, priorTurn, recentUserQuestions);
+    const focusCardId = input.focusCardId || memory.focusCardId;
+    const history = formatHistoryForProvider(priorMessages);
 
     await conversationRepository.addMessage(conversationId, "user", input.question);
 
@@ -82,9 +118,9 @@ export const chatService = {
     }
 
     const retrieved = await retrieveService.topK(
-      input.question,
+      memory.retrievalQuery,
       GUARD_CONFIG.topK,
-      input.focusCardId
+      focusCardId
     );
     const cards = retrieved.candidates.map((item) => ({
       id: item.card.id,
@@ -95,8 +131,11 @@ export const chatService = {
     const corpus = retrieved.allCards
       .map((card) => `${card.title} ${card.body}`)
       .join("\n");
-    // Citation follow-ups already name a verified card, so treat topical overlap as satisfied.
-    const overlap = input.focusCardId ? 1 : topicalOverlap(input.question, corpus);
+    // Follow-ups and citation pins already inherit a verified topic.
+    const overlap =
+      focusCardId || memory.isFollowUp || memory.isIdentity
+        ? Math.max(0.85, topicalOverlap(memory.retrievalQuery, corpus))
+        : topicalOverlap(memory.retrievalQuery, corpus);
 
     const provider = chatProvider();
     let providerId = provider.id;
@@ -106,10 +145,10 @@ export const chatService = {
         question: input.question,
         cards,
         audience: input.audience,
+        history,
+        followUp: memory.isFollowUp,
       });
     } catch (error) {
-      // Never hard-fail on Vercel: if the live provider (e.g. Groq) times out or
-      // errors, fall back to the deterministic seed provider so chat still answers.
       console.error("chat provider failed, falling back to seed:", error);
       const fallback = new SeedChatProvider();
       providerId = fallback.id;
@@ -117,11 +156,13 @@ export const chatService = {
         question: input.question,
         cards,
         audience: input.audience,
+        history,
+        followUp: memory.isFollowUp,
       });
     }
 
-    if (input.focusCardId) {
-      const focused = cards.find((card) => card.id === input.focusCardId);
+    if (focusCardId) {
+      const focused = cards.find((card) => card.id === focusCardId);
       if (focused) {
         const alreadyCited = draft.citations.some((citation) => citation.cardId === focused.id);
         draft = {
@@ -143,7 +184,7 @@ export const chatService = {
     }
 
     if (
-      !input.focusCardId &&
+      !focusCardId &&
       (retrieved.bestScore < GUARD_CONFIG.similarityThreshold ||
         cards.length === 0 ||
         overlap < 0.2)
@@ -183,6 +224,9 @@ export const chatService = {
       policyId: verdict.policyId,
       featuresJson: JSON.stringify({
         ...verdict.features,
+        followUp: memory.isFollowUp,
+        identity: memory.isIdentity,
+        retrievalQuery: memory.retrievalQuery,
         scores: retrieved.candidates.map((item) => ({
           cardId: item.card.id,
           title: item.card.title,
@@ -191,7 +235,6 @@ export const chatService = {
       }),
     });
 
-    // These two writes are independent, so run them together to save a round-trip.
     const pricing = PRICING[providerId as keyof typeof PRICING] ?? { usdPerUnit: 0 };
     await Promise.all([
       conversationRepository.addMessage(conversationId, "assistant", finalAnswer),

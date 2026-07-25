@@ -177,4 +177,10 @@ export const answersRepository = {
   list() {
     return prisma.agentAnswer.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
   },
+  latestForConversation(conversationId: string) {
+    return prisma.agentAnswer.findFirst({
+      where: { conversationId },
+      orderBy: { createdAt: "desc" },
+    });
+  },
 };

@@ -18,6 +18,8 @@ export class GeminiChatProvider implements ChatProvider {
     question: string;
     cards: Array<{ id: string; title: string; body: string; kind: string }>;
     audience?: string;
+    history?: Array<{ role: "user" | "assistant"; content: string }>;
+    followUp?: boolean;
   }): Promise<GroundedAnswer> {
     if (input.cards.length === 0) {
       return groundedAnswerSchema.parse({

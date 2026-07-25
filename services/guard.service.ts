@@ -44,8 +44,9 @@ export function isSocialOpener(question: string): boolean {
 
 const STOP = new Set([
   "a", "an", "the", "and", "or", "of", "to", "for", "in", "on", "is", "are",
-  "was", "what", "who", "how", "does", "did", "yuan", "about", "with", "from",
-  "which", "like", "using", "this", "that", "personal", "agent",
+  "was", "what", "who", "how", "does", "did", "about", "with", "from",
+  "which", "like", "using", "this", "that", "personal", "agent", "can",
+  "you", "me", "more", "please", "tell",
 ]);
 
 export function topicalOverlap(question: string, corpus: string): number {
@@ -54,7 +55,13 @@ export function topicalOverlap(question: string, corpus: string): number {
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
     .filter((token) => token.length >= 2 && !STOP.has(token));
-  if (!q.length) return 0;
+  // "who is yuan" previously collapsed to zero tokens because "yuan" was a stopword,
+  // which refused the core identity question. Keep the owner name as a real signal.
+  if (!q.length) {
+    const lower = question.toLowerCase();
+    if (/\byuan\b/.test(lower) || /\bmuni\b/.test(lower)) return 1;
+    return 0;
+  }
   const hay = corpus.toLowerCase();
   const hits = q.filter((token) => hay.includes(token)).length;
   return hits / q.length;

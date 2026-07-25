@@ -13,15 +13,17 @@ const STOPWORDS = new Set([
   "the", "a", "an", "and", "or", "of", "to", "for", "is", "are", "was", "were",
   "what", "who", "whom", "which", "how", "why", "when", "where", "do", "does",
   "did", "in", "on", "at", "by", "this", "that", "these", "those", "its", "it",
-  "yuan", "me", "my", "you", "your", "give", "all", "with", "about", "can",
+  "me", "my", "you", "your", "give", "all", "with", "about", "can",
   "could", "would", "should", "i", "us", "our", "as", "so", "if", "than", "then",
   "into", "from", "have", "has", "had", "be", "been", "being", "there", "their",
+  "more", "please", "tell", "expound", "elaborate",
 ]);
 
 // The seed embedding is only 64-dim hashed bag-of-words, so distinctive keywords
-// (e.g. "broadcast", "checkpoint") can get buried. A lexical bonus never lowers a
-// card's semantic score; it only lifts cards that literally share query terms.
+// (e.g. "broadcast", "checkpoint", "yuan") can get buried. A lexical bonus never
+// lowers a card's semantic score; it only lifts cards that literally share query terms.
 const LEXICAL_WEIGHT = 0.45;
+const IDENTITY_BIO_BOOST = 0.35;
 
 function contentTokens(text: string): string[] {
   return text
@@ -51,12 +53,17 @@ function lexicalScore(queryTokens: string[], cardText: string): number {
   return hits / queryTokens.length;
 }
 
+function isIdentityQuery(question: string): boolean {
+  return /\b(who\s+is\s+yuan|about\s+yuan|tell\s+me\s+about\s+yuan)\b/i.test(question);
+}
+
 export const retrieveService = {
   async topK(question: string, k = GUARD_CONFIG.topK, focusCardId?: string) {
     const provider = embeddingProvider();
     const questionVector = await provider.embed(question);
     const cards = await knowledgeRepository.list();
     const queryTokens = contentTokens(question);
+    const identity = isIdentityQuery(question);
     let ranked = cards
       .filter((card) => card.embedding)
       .map((card) => {
@@ -65,8 +72,11 @@ export const retrieveService = {
           queryTokens,
           `${card.title} ${card.body} ${tagsOf(card.tagsJson)}`
         );
-        // Additive, clamped: keyword hits lift the score but never demote a card.
-        const score = Math.min(1, semantic + LEXICAL_WEIGHT * lexical);
+        let score = Math.min(1, semantic + LEXICAL_WEIGHT * lexical);
+        // Identity asks should surface the bio card even when the seed embedding is weak.
+        if (identity && (card.kind === "bio" || /about yuan/i.test(card.title))) {
+          score = Math.min(1, score + IDENTITY_BIO_BOOST);
+        }
         return { card, score };
       })
       .sort((a, b) => b.score - a.score);

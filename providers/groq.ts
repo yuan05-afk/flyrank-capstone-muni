@@ -1,5 +1,5 @@
 import { groundedAnswerSchema, type GroundedAnswer } from "@/lib/validation";
-import type { ChatProvider } from "./contracts";
+import type { ChatHistoryTurn, ChatProvider } from "./contracts";
 
 function apiKey() {
   const key = process.env.GROQ_API_KEY;
@@ -7,9 +7,9 @@ function apiKey() {
   return key;
 }
 
-const CHAT_MODEL = process.env.GROQ_CHAT_MODEL || "llama-3.3-70b-versatile";
+const CHAT_MODEL = process.env.GROQ_CHAT_MODEL || "llama-3.1-8b-instant";
 const REQUEST_TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS || 9000);
-const MAX_TOKENS = Number(process.env.GROQ_MAX_TOKENS || 380);
+const MAX_TOKENS = Number(process.env.GROQ_MAX_TOKENS || 420);
 
 function extractJson(text: string): unknown {
   const trimmed = text.trim();
@@ -32,6 +32,8 @@ export class GroqChatProvider implements ChatProvider {
     question: string;
     cards: Array<{ id: string; title: string; body: string; kind: string }>;
     audience?: string;
+    history?: ChatHistoryTurn[];
+    followUp?: boolean;
   }): Promise<GroundedAnswer> {
     if (input.cards.length === 0) {
       return groundedAnswerSchema.parse({
@@ -52,12 +54,13 @@ export class GroqChatProvider implements ChatProvider {
 Voice:
 - Warm, direct, and genuinely human. You are Muni speaking in the first person; talk about Yuan in the third person.
 - Be specific and concrete. Never sound like a generic chatbot. Do not say "As an AI", "Based on the provided information", or "the knowledge cards say".
-- Keep it tight: 2 to 4 sentences. Lead with the answer, not preamble.
+- ${input.followUp ? "This is a follow-up. Expand helpfully on the prior topic using the cards: add texture, connections, and clarity in 3 to 5 sentences. Do not invent new facts." : "Keep it tight: 2 to 4 sentences. Lead with the answer, not preamble."}
 
 Grounding rules:
-- Use ONLY the provided knowledge cards. Never invent facts, numbers, dates, or links.
+- Use ONLY the provided knowledge cards. Never invent facts, numbers, dates, employers, or links.
+- You may rephrase, synthesize, and connect details that appear in the cards. That is creativity inside the evidence, not hallucination.
 - If a relevant card contains a URL, include that exact URL in the answer.
-- If the cards do not actually support the question, set grounded=false, confidence <= 0.3, citations=[], and refuse in one honest, friendly sentence that points visitors to the Contact section or to leave a note in chat.
+- If the cards do not actually support the question (even with conversation history), set grounded=false, confidence <= 0.3, citations=[], and refuse in one honest, friendly sentence that points visitors to the Contact section or to leave a note in chat.
 
 Return ONE JSON object with keys:
 - answer: string
@@ -65,6 +68,11 @@ Return ONE JSON object with keys:
 - confidence: number from 0 to 1 (0.85+ only when the cards clearly answer it)
 - grounded: boolean
 Audience tone: ${input.audience || "general"}.`;
+
+    const historyMessages = (input.history || []).map((turn) => ({
+      role: turn.role,
+      content: turn.content,
+    }));
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -79,11 +87,12 @@ Audience tone: ${input.audience || "general"}.`;
         },
         body: JSON.stringify({
           model: CHAT_MODEL,
-          temperature: 0.3,
-          max_tokens: MAX_TOKENS,
+          temperature: input.followUp ? 0.45 : 0.35,
+          max_tokens: input.followUp ? Math.max(MAX_TOKENS, 480) : MAX_TOKENS,
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: system },
+            ...historyMessages,
             {
               role: "user",
               content: `Question: ${input.question}\n\nKnowledge cards:\n${context}`,
@@ -106,9 +115,6 @@ Audience tone: ${input.audience || "general"}.`;
     const content = json.choices?.[0]?.message?.content;
     if (!content) throw new Error("Groq chat returned an empty message");
 
-    // Smaller models (e.g. 8b) sometimes omit citation titles or invent card ids.
-    // Backfill titles from the known cards and drop anything not in the card set so
-    // the schema validates instead of falling back to the seed provider.
     const raw = extractJson(content) as Record<string, unknown>;
     const titleById = new Map(input.cards.map((card) => [card.id, card.title] as const));
     if (Array.isArray(raw.citations)) {

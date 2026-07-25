@@ -110,6 +110,32 @@ describe("chat decision core", () => {
     expect(result.answer.status).toBe("grounded");
     expect(result.citations.some((citation) => citation.cardId === muni.id)).toBe(true);
   });
+
+  it("grounds identity questions like who is yuan", async () => {
+    const result = await chatService.ask({
+      question: "who is yuan",
+      audience: "general",
+    });
+    expect(result.answer.status).toBe("grounded");
+    expect(result.answer.answer.toLowerCase()).toMatch(/yuan|flyrank|capstone/);
+    expect(result.answer.answer.toLowerCase()).not.toContain("do not have verified knowledge");
+  });
+
+  it("keeps conversation memory for expound follow-ups", async () => {
+    const first = await chatService.ask({
+      question: "What is Lens and what does its mismatch guard do?",
+      audience: "general",
+    });
+    expect(first.answer.status).toBe("grounded");
+    const second = await chatService.ask({
+      question: "can you expound more",
+      audience: "general",
+      conversationId: first.conversationId,
+    });
+    expect(second.answer.status).toBe("grounded");
+    expect(second.answer.answer.toLowerCase()).toMatch(/lens|mismatch|image/);
+    expect(second.answer.answer.toLowerCase()).not.toContain("do not have verified knowledge");
+  });
 });
 
 describe("job idempotency", () => {
