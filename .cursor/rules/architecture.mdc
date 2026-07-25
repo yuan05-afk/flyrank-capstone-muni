@@ -1,0 +1,8 @@
+---
+description: Muni architecture layering rules
+globs: "{app,services,repositories,providers,lib}/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+Use `repository -> service -> route handler`. Providers stay behind interfaces.
+Never invent answers when grounding fails.

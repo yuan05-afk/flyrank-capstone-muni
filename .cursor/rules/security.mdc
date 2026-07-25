@@ -1,0 +1,8 @@
+---
+description: Muni security rules
+globs: "**/*.{ts,tsx,md,env*}"
+alwaysApply: false
+---
+
+Never commit `GEMINI_API_KEY` or other secrets. Keep seed providers as the
+default graded path. `.env` stays gitignored.

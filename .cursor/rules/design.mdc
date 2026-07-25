@@ -1,0 +1,8 @@
+---
+description: Muni design rules
+globs: "{app,components}/**/*.{ts,tsx,css}"
+alwaysApply: false
+---
+
+Follow `capstone-muni-design` and `capstone-signal-design`. No em dashes.
+Mascot states and grounding-guard chapter are required product hooks.
