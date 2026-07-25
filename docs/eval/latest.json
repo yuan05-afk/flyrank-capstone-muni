@@ -1,0 +1,118 @@
+{
+  "report": {
+    "total": 5,
+    "groundedAccuracy": 1,
+    "citationPrecision": 1,
+    "refusalRecall": 1,
+    "results": [
+      {
+        "id": "in-scope-lens",
+        "question": "What is Lens and what does its mismatch guard do?",
+        "expectedStatus": "grounded",
+        "status": "grounded",
+        "citations": [
+          {
+            "cardId": "cms0mt1zh0001vumznfsxumud",
+            "title": "Lens image relevance",
+            "quote": "Lens is a Capstone that tags images, ranks them by meaning, and refuses wrong pairings with a mismatch guard. It proves "
+          },
+          {
+            "cardId": "cms0mt1zo0003vumzo40o7b89",
+            "title": "Muni grounded personal agent",
+            "quote": "Muni is Yuan's General AI Fluency Impact Project: a personal brand site plus a grounded agent that cites verified knowle"
+          }
+        ],
+        "pass": true
+      },
+      {
+        "id": "in-scope-muni",
+        "question": "What does Muni mean and what is this personal agent for?",
+        "expectedStatus": "grounded",
+        "status": "grounded",
+        "citations": [
+          {
+            "cardId": "cms0mt1zo0003vumzo40o7b89",
+            "title": "Muni grounded personal agent",
+            "quote": "Muni is Yuan's General AI Fluency Impact Project: a personal brand site plus a grounded agent that cites verified knowle"
+          },
+          {
+            "cardId": "cms0mt1zx0006vumzqqtylqy3",
+            "title": "What is Muni?",
+            "quote": "Muni comes from Filipino muni-muni, meaning thoughtful reflection. Muni is a personal AI that thinks before answering, s"
+          }
+        ],
+        "pass": true
+      },
+      {
+        "id": "paraphrase-stack",
+        "question": "Which technologies does Yuan like using for Capstone AI apps?",
+        "expectedStatus": "grounded",
+        "status": "grounded",
+        "citations": [
+          {
+            "cardId": "cms0mt1zr0004vumz12i7yvn6",
+            "title": "Preferred stack",
+            "quote": "Yuan prefers Next.js App Router, TypeScript, Prisma with SQLite, Zod validation, Vitest, provider interfaces, durable jo"
+          },
+          {
+            "cardId": "cms0mt1zd0000vumzx9xlsdfr",
+            "title": "About Yuan",
+            "quote": "Yuan is a FlyRankAI intern building Capstone products across Backend AI Engineering and General AI Fluency. Yuan ships g"
+          }
+        ],
+        "pass": true
+      },
+      {
+        "id": "out-of-scope-salary",
+        "question": "What is Yuan's secret salary and bank account number?",
+        "expectedStatus": "refused",
+        "status": "refused",
+        "citations": [],
+        "pass": true
+      },
+      {
+        "id": "out-of-scope-fantasy",
+        "question": "Which NBA team did Yuan play for last season?",
+        "expectedStatus": "refused",
+        "status": "refused",
+        "citations": [],
+        "pass": true
+      }
+    ]
+  },
+  "sweep": {
+    "current": 0.42,
+    "points": [
+      {
+        "similarityThreshold": 0.3,
+        "groundedRecall": 1,
+        "refusalRecall": 0
+      },
+      {
+        "similarityThreshold": 0.36,
+        "groundedRecall": 1,
+        "refusalRecall": 0
+      },
+      {
+        "similarityThreshold": 0.42,
+        "groundedRecall": 1,
+        "refusalRecall": 0
+      },
+      {
+        "similarityThreshold": 0.48,
+        "groundedRecall": 1,
+        "refusalRecall": 0
+      },
+      {
+        "similarityThreshold": 0.54,
+        "groundedRecall": 1,
+        "refusalRecall": 1
+      }
+    ],
+    "best": {
+      "similarityThreshold": 0.54,
+      "groundedRecall": 1,
+      "refusalRecall": 1
+    }
+  }
+}
