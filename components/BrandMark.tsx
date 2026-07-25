@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { MouseEvent } from "react";
 
 /** Focus ring + Muni face mark. */
 export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
@@ -15,9 +16,19 @@ export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-export function BrandLockup({ href = "/" }: { href?: string }) {
+export function BrandLockup({
+  href = "/",
+  onClick,
+}: {
+  href?: string;
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
+}) {
   return (
-    <Link href={href} className="inline-flex items-center gap-2.5 font-display font-semibold text-ink focus-ring">
+    <Link
+      href={href}
+      onClick={onClick}
+      className="inline-flex items-center gap-2.5 font-display font-semibold text-ink focus-ring"
+    >
       <BrandMark />
       <span>Muni</span>
     </Link>

@@ -1,9 +1,12 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import { CAPSTONE_LINKS } from "@/config/capstones.config";
 import { MotifArrow, MotifGitHub, MotifNote } from "@/components/Motifs";
 
 const GITHUB_URL = "https://github.com/yuan05-afk";
+const EASE = [0.22, 1, 0.36, 1] as const;
+const viewIn = { once: false as const, amount: 0.2, margin: "-40px 0px" as const };
 
 const FAVICON: Record<string, string> = {
   checkpoint: "/capstones/checkpoint.svg",
@@ -15,8 +18,17 @@ const FAVICON: Record<string, string> = {
 /**
  * Real contact surface Muni's answers can point to.
  * Each Capstone card uses that product's live favicon and opens its domain.
+ * Pass `embedded` when wrapped by ScrollChapter so we don't nest sections.
  */
-export function ContactSection({ compact = false }: { compact?: boolean }) {
+export function ContactSection({
+  compact = false,
+  embedded = false,
+}: {
+  compact?: boolean;
+  embedded?: boolean;
+}) {
+  const reduce = useReducedMotion();
+
   if (compact) {
     return (
       <div id="contact" className="contact-panel">
@@ -56,25 +68,37 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
     );
   }
 
-  return (
-    <section id="contact" className="chapter">
+  const body = (
+    <>
       <div className="chapter-head">
-        <span className="eyebrow">
-          <span className="muni-dot" /> Contact
-        </span>
-        <h2>Reach Yuan directly.</h2>
-        <p className="text-muted">
-          When Muni refuses, it is not a dead end. Leave a note in chat or open a Capstone and
-          review the work yourself.
-        </p>
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 28 }}
+          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          viewport={viewIn}
+          transition={{ duration: 0.55, ease: EASE }}
+        >
+          <span className="eyebrow">
+            <span className="muni-dot" /> Contact
+          </span>
+          <h2>Reach Yuan directly.</h2>
+          <p className="text-muted">
+            When Muni refuses, it is not a dead end. Leave a note in chat or open a Capstone and
+            review the work yourself.
+          </p>
+        </motion.div>
       </div>
 
       <div className="contact-grid">
-        <a
+        <motion.a
           href={GITHUB_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="surface contact-card focus-ring"
+          initial={reduce ? false : { opacity: 0, y: 18 }}
+          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          viewport={viewIn}
+          transition={{ duration: 0.4, ease: EASE }}
+          whileHover={reduce ? undefined : { y: -4 }}
         >
           <span className="contact-icon">
             <MotifGitHub />
@@ -86,9 +110,17 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
           <span className="contact-cta">
             Open profile <MotifArrow />
           </span>
-        </a>
+        </motion.a>
 
-        <a href="/chat" className="surface contact-card focus-ring">
+        <motion.a
+          href="/chat"
+          className="surface contact-card focus-ring"
+          initial={reduce ? false : { opacity: 0, y: 18 }}
+          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          viewport={viewIn}
+          transition={{ duration: 0.4, delay: reduce ? 0 : 0.04, ease: EASE }}
+          whileHover={reduce ? undefined : { y: -4 }}
+        >
           <span className="contact-icon">
             <MotifNote />
           </span>
@@ -99,15 +131,20 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
           <span className="contact-cta">
             Chat with Muni <MotifArrow />
           </span>
-        </a>
+        </motion.a>
 
-        {CAPSTONE_LINKS.map((link) => (
-          <a
+        {CAPSTONE_LINKS.map((link, index) => (
+          <motion.a
             key={link.id}
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
             className="surface contact-card focus-ring"
+            initial={reduce ? false : { opacity: 0, y: 18 }}
+            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            viewport={viewIn}
+            transition={{ duration: 0.4, delay: reduce ? 0 : 0.06 + index * 0.04, ease: EASE }}
+            whileHover={reduce ? undefined : { y: -4 }}
           >
             <span className="contact-icon">
               <img
@@ -123,9 +160,16 @@ export function ContactSection({ compact = false }: { compact?: boolean }) {
             <span className="contact-cta">
               Live demo <MotifArrow />
             </span>
-          </a>
+          </motion.a>
         ))}
       </div>
+    </>
+  );
+
+  if (embedded) return <div className="contact-embedded">{body}</div>;
+  return (
+    <section id="contact" className="chapter">
+      {body}
     </section>
   );
 }

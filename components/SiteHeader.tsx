@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { MouseEvent } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { BrandLockup } from "@/components/BrandMark";
@@ -12,7 +13,13 @@ type NavLink = {
   onClick?: () => void;
 };
 
-export function SiteHeader({ links }: { links: NavLink[] }) {
+export function SiteHeader({
+  links,
+  onBrandClick,
+}: {
+  links: NavLink[];
+  onBrandClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
+}) {
   const [open, setOpen] = useState(false);
   const reduce = useReducedMotion();
 
@@ -56,7 +63,7 @@ export function SiteHeader({ links }: { links: NavLink[] }) {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-canvas">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-5">
-        <BrandLockup />
+        <BrandLockup onClick={onBrandClick} />
         <nav className="hidden items-center gap-3 md:flex">{links.map((link) => renderLink(link))}</nav>
         <button
           type="button"

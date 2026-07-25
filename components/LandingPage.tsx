@@ -1,5 +1,6 @@
 "use client";
 
+import type { MouseEvent as ReactMouseEvent } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { BrandLockup, BrandMark } from "@/components/BrandMark";
@@ -8,9 +9,12 @@ import { HeroAnswerCard } from "@/components/HeroAnswerCard";
 import { MarqueeBand } from "@/components/MarqueeBand";
 import { MuniMascot } from "@/components/MuniMascot";
 import { MotifArrow, MotifCards, MotifCite, MotifGuard } from "@/components/Motifs";
+import { ScrollChapter } from "@/components/ScrollChapter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useHeroMode } from "@/hooks/useHeroMode";
-import { useLenis } from "@/hooks/useLenis";
+import { scrollToTop, useLenis } from "@/hooks/useLenis";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 const features = [
   {
@@ -29,6 +33,13 @@ const features = [
     copy: "Weak similarity, missing citations, or low confidence triggers an honest refusal.",
   },
 ];
+
+/** Replays on scroll up and down (CheckMyDevice once:false). Transform-only for speed. */
+const viewIn = {
+  once: false as const,
+  amount: 0.22,
+  margin: "-40px 0px" as const,
+};
 
 function HelloCard({ compact = false }: { compact?: boolean }) {
   return (
@@ -51,19 +62,26 @@ function HelloCard({ compact = false }: { compact?: boolean }) {
 }
 
 export function LandingPage() {
-  useLenis();
+  const lenisRef = useLenis();
   const reduce = useReducedMotion();
   const { mode, exiting, showFlank, flankActive } = useHeroMode(1280);
+  // Blur only on first hero paint (one-shot). Scroll chapters stay transform-only.
   const enter = reduce ? {} : { opacity: 0, y: 22, filter: "blur(8px)" };
-  const spring = { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const };
+  const spring = { duration: 0.7, ease: EASE };
   const sideMotion = {
     duration: reduce ? 0.01 : 0.42,
-    ease: [0.22, 1, 0.36, 1] as const,
+    ease: EASE,
   };
+
+  function handleBrandClick(event: ReactMouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    scrollToTop(lenisRef.current, Boolean(reduce));
+  }
 
   return (
     <main className="hero-mesh">
       <SiteHeader
+        onBrandClick={handleBrandClick}
         links={[
           { href: "#contact", label: "Contact" },
           { href: "/login", label: "Owner desk" },
@@ -74,6 +92,10 @@ export function LandingPage() {
       <section
         className={`hero-stage ${showFlank ? "hero-stage--flank" : "hero-stage--stack"}`}
       >
+        <div className="hero-orbs" aria-hidden="true">
+          <span className="hero-orb hero-orb-a" />
+          <span className="hero-orb hero-orb-b" />
+        </div>
         <div className="hero-wash" aria-hidden="true" />
 
         <AnimatePresence>
@@ -86,9 +108,9 @@ export function LandingPage() {
                 animate={
                   flankActive
                     ? { opacity: 1, x: 0, scale: 1 }
-                    : { opacity: 0, x: -20, scale: 0.9, filter: "blur(4px)" }
+                    : { opacity: 0, x: -20, scale: 0.9 }
                 }
-                exit={reduce ? undefined : { opacity: 0, x: -24, scale: 0.88, filter: "blur(6px)" }}
+                exit={reduce ? undefined : { opacity: 0, x: -24, scale: 0.88 }}
                 transition={sideMotion}
               >
                 <HelloCard />
@@ -100,9 +122,9 @@ export function LandingPage() {
                 animate={
                   flankActive
                     ? { opacity: 1, x: 0, scale: 1 }
-                    : { opacity: 0, x: 20, scale: 0.9, filter: "blur(4px)" }
+                    : { opacity: 0, x: 20, scale: 0.9 }
                 }
-                exit={reduce ? undefined : { opacity: 0, x: 24, scale: 0.88, filter: "blur(6px)" }}
+                exit={reduce ? undefined : { opacity: 0, x: 24, scale: 0.88 }}
                 transition={{ ...sideMotion, delay: reduce ? 0 : 0.04 }}
               >
                 <HeroAnswerCard />
@@ -184,24 +206,31 @@ export function LandingPage() {
 
       <MarqueeBand />
 
-      <section className="chapter">
+      <ScrollChapter className="chapter">
         <div className="chapter-head">
-          <span className="eyebrow">
-            <span className="muni-dot" /> Retrieve, ground, refuse
-          </span>
-          <h2>Think first. Speak only when grounded.</h2>
-          <p className="text-muted">
-            Muni is Yuan&apos;s personal brand site and digital twin. The hard part is not answering. It is knowing when not to.
-          </p>
+          <motion.div
+            initial={reduce ? false : { opacity: 0, y: 28 }}
+            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            viewport={viewIn}
+            transition={{ duration: 0.55, ease: EASE }}
+          >
+            <span className="eyebrow">
+              <span className="muni-dot" /> Retrieve, ground, refuse
+            </span>
+            <h2>Think first. Speak only when grounded.</h2>
+            <p className="text-muted">
+              Muni is Yuan&apos;s personal brand site and digital twin. The hard part is not answering. It is knowing when not to.
+            </p>
+          </motion.div>
         </div>
         <div className="grid-3">
           {features.map(({ Icon, title, copy }, index) => (
             <motion.article
               key={title}
-              whileInView={{ opacity: 1, y: 0 }}
+              whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
               initial={reduce ? false : { opacity: 0, y: 22 }}
-              transition={{ delay: index * 0.06, duration: 0.45 }}
-              viewport={{ once: true, margin: "-40px" }}
+              transition={{ delay: index * 0.06, duration: 0.45, ease: EASE }}
+              viewport={viewIn}
               whileHover={reduce ? undefined : { y: -5 }}
               tabIndex={0}
               className="surface feature-card"
@@ -214,23 +243,31 @@ export function LandingPage() {
             </motion.article>
           ))}
         </div>
-      </section>
+      </ScrollChapter>
 
-      <section id="guard" className="chapter">
+      <ScrollChapter id="guard" className="chapter">
         <div className="chapter-head">
-          <span className="eyebrow">
-            <span className="muni-dot" /> Grounding Guard
-          </span>
-          <h2>The best retrieval can still be wrong.</h2>
-          <p className="text-muted">
-            Muni refuses to invent credentials. Out-of-scope questions get humility, not hallucination.
-          </p>
+          <motion.div
+            initial={reduce ? false : { opacity: 0, y: 28 }}
+            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            viewport={viewIn}
+            transition={{ duration: 0.55, ease: EASE }}
+          >
+            <span className="eyebrow">
+              <span className="muni-dot" /> Grounding Guard
+            </span>
+            <h2>The best retrieval can still be wrong.</h2>
+            <p className="text-muted">
+              Muni refuses to invent credentials. Out-of-scope questions get humility, not hallucination.
+            </p>
+          </motion.div>
         </div>
         <div className="grid-2">
           <motion.article
-            whileInView={{ opacity: 1, y: 0 }}
+            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
             initial={reduce ? false : { opacity: 0, y: 18 }}
-            viewport={{ once: true }}
+            viewport={viewIn}
+            transition={{ duration: 0.45, ease: EASE }}
             whileHover={reduce ? undefined : { y: -4 }}
             className="surface feature-card"
           >
@@ -251,9 +288,10 @@ export function LandingPage() {
             </div>
           </motion.article>
           <motion.article
-            whileInView={{ opacity: 1, y: 0 }}
+            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
             initial={reduce ? false : { opacity: 0, y: 18 }}
-            viewport={{ once: true }}
+            viewport={{ ...viewIn, amount: 0.18 }}
+            transition={{ duration: 0.45, delay: reduce ? 0 : 0.05, ease: EASE }}
             whileHover={reduce ? undefined : { y: -4 }}
             className="surface feature-card"
           >
@@ -274,9 +312,9 @@ export function LandingPage() {
             </div>
           </motion.article>
         </div>
-      </section>
+      </ScrollChapter>
 
-      <section className="chapter">
+      <ScrollChapter className="chapter">
         <div className="grid-3">
           {[
             ["10", "verified knowledge cards"],
@@ -287,26 +325,29 @@ export function LandingPage() {
               key={l}
               tabIndex={0}
               className="surface feature-card text-center"
-              whileInView={{ opacity: 1, y: 0 }}
+              whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
               initial={reduce ? false : { opacity: 0, y: 16 }}
-              transition={{ delay: index * 0.05 }}
-              viewport={{ once: true }}
+              transition={{ delay: index * 0.05, duration: 0.4, ease: EASE }}
+              viewport={viewIn}
             >
               <b className="font-display text-4xl text-muni">{v}</b>
               <p className="mono mt-2 text-[10px] uppercase tracking-widest text-muted">{l}</p>
             </motion.div>
           ))}
         </div>
-      </section>
+      </ScrollChapter>
 
-      <ContactSection />
+      <ScrollChapter id="contact" className="chapter">
+        <ContactSection embedded />
+      </ScrollChapter>
 
-      <section className="chapter">
+      <ScrollChapter className="chapter">
         <motion.div
           className="surface flex flex-col items-center p-8 text-center sm:p-16"
-          whileInView={{ opacity: 1, scale: 1 }}
-          initial={reduce ? false : { opacity: 0, scale: 0.98 }}
-          viewport={{ once: true }}
+          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          initial={reduce ? false : { opacity: 0, y: 20 }}
+          viewport={{ once: false, amount: 0.35 }}
+          transition={{ duration: 0.5, ease: EASE }}
         >
           <BrandMark className="h-12 w-12" />
           <h2 className="!mb-2">Put every claim in focus.</h2>
@@ -317,11 +358,11 @@ export function LandingPage() {
             Open Muni <MotifArrow />
           </Link>
         </motion.div>
-      </section>
+      </ScrollChapter>
 
       <footer className="border-t border-line py-8">
         <div className="footer-row mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-5">
-          <BrandLockup />
+          <BrandLockup onClick={handleBrandClick} />
           <span className="mono text-[10px] text-muted">General AI Fluency · Week 6 · Impact Project</span>
         </div>
       </footer>

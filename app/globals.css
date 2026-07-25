@@ -114,6 +114,7 @@ body {
   height: 6px;
   border-radius: 50%;
   background: var(--muni);
+  animation: pulse 1.8s ease-in-out infinite;
 }
 @keyframes pulse {
   50% { opacity: .55; }
@@ -129,6 +130,40 @@ body {
   min-height: calc(88svh - 56px);
   display: grid;
   place-items: center;
+}
+.hero-orbs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  will-change: transform;
+  contain: layout paint;
+}
+.hero-orb-a {
+  width: min(42vw, 380px);
+  height: min(42vw, 380px);
+  left: -6%;
+  top: 12%;
+  background: rgba(245, 158, 11, 0.16);
+  animation: orb-drift 14s ease-in-out infinite alternate;
+}
+.hero-orb-b {
+  width: min(36vw, 320px);
+  height: min(36vw, 320px);
+  right: -4%;
+  bottom: 8%;
+  background: rgba(217, 119, 6, 0.12);
+  animation: orb-drift 18s ease-in-out infinite alternate-reverse;
+}
+@keyframes orb-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(18px, -22px, 0) scale(1.06); }
 }
 .hero-wash {
   position: absolute;
@@ -1137,5 +1172,10 @@ th {
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .001ms !important;
+  }
+  .hero-orb-a,
+  .hero-orb-b,
+  .muni-dot {
+    animation: none !important;
   }
 }
