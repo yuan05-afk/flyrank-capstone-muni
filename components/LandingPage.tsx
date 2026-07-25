@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { BrandLockup, BrandMark } from "@/components/BrandMark";
 import { ContactSection } from "@/components/ContactSection";
 import { HeroAnswerCard } from "@/components/HeroAnswerCard";
@@ -9,6 +9,7 @@ import { MarqueeBand } from "@/components/MarqueeBand";
 import { MuniMascot } from "@/components/MuniMascot";
 import { MotifArrow, MotifCards, MotifCite, MotifGuard } from "@/components/Motifs";
 import { SiteHeader } from "@/components/SiteHeader";
+import { useHeroMode } from "@/hooks/useHeroMode";
 import { useLenis } from "@/hooks/useLenis";
 
 const features = [
@@ -29,11 +30,36 @@ const features = [
   },
 ];
 
+function HelloCard({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={`surface muni-hello-card ${compact ? "muni-hello-card--compact" : ""}`}>
+      <MuniMascot state="wave" className="muni-hello-mascot" />
+      <div className="muni-hello-copy">
+        <span className="muni-hello-kicker">
+          <span className="muni-hello-dot" aria-hidden="true" />
+          Kumusta!
+        </span>
+        <p>
+          I&apos;m Muni. Ask me about Yuan&apos;s work, and I&apos;ll answer from verified sources.
+        </p>
+        <Link href="/chat" className="muni-hello-link focus-ring">
+          Come say hello <MotifArrow className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export function LandingPage() {
   useLenis();
   const reduce = useReducedMotion();
+  const { mode, exiting, showFlank, flankActive } = useHeroMode(1280);
   const enter = reduce ? {} : { opacity: 0, y: 22, filter: "blur(8px)" };
   const spring = { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const };
+  const sideMotion = {
+    duration: reduce ? 0.01 : 0.42,
+    ease: [0.22, 1, 0.36, 1] as const,
+  };
 
   return (
     <main className="hero-mesh">
@@ -45,95 +71,115 @@ export function LandingPage() {
         ]}
       />
 
-      <section className="hero-stage">
-        <div className="hero-grid">
-          <motion.aside
-            className="hero-side hero-side--left"
-            initial={reduce ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...spring, delay: 0.12 }}
-          >
-            <div className="surface muni-hello-card h-full">
-              <MuniMascot state="wave" className="muni-hello-mascot" />
-              <div className="muni-hello-copy">
-                <span className="muni-hello-kicker">
-                  <span className="muni-hello-dot" aria-hidden="true" />
-                  Kumusta!
-                </span>
-                <p>
-                  I&apos;m Muni. Ask me about Yuan&apos;s work, and I&apos;ll answer
-                  from verified sources.
-                </p>
-                <Link href="/chat" className="muni-hello-link focus-ring">
-                  Come say hello <MotifArrow className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
-          </motion.aside>
+      <section
+        className={`hero-stage ${showFlank ? "hero-stage--flank" : "hero-stage--stack"}`}
+      >
+        <div className="hero-wash" aria-hidden="true" />
 
-          <div className="hero-safe">
-            <motion.div
-              initial={enter}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={spring}
-              className="eyebrow mx-auto"
-            >
-              <span className="muni-dot" /> Personal AI with a grounding guard
-            </motion.div>
-            <motion.h1
-              initial={enter}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ ...spring, delay: 0.08 }}
-              className="hero-title font-display"
-            >
-              Meet <span className="text-muni">Muni</span>. The personal AI that only speaks from verified knowledge.
-            </motion.h1>
-            <motion.p
-              initial={enter}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ ...spring, delay: 0.16 }}
-              className="hero-lead mx-auto mt-5 max-w-xl text-muted"
-            >
-              Muni comes from Filipino &quot;muni-muni,&quot; thoughtful reflection. It retrieves Yuan&apos;s knowledge cards, cites every claim, and refuses when evidence is missing.
-            </motion.p>
-            <motion.div
-              initial={enter}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ ...spring, delay: 0.22 }}
-              className="hero-cta mt-6 flex flex-wrap justify-center gap-3"
-            >
-              <Link href="/chat" className="btn-primary">
-                Talk to Muni <MotifArrow />
-              </Link>
-              <a href="#guard" className="btn-secondary">
-                See the guard
-              </a>
-            </motion.div>
-            <motion.div
-              className="grounding-strip"
-              aria-label="Example grounding decision"
-              initial={reduce ? false : { opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...spring, delay: 0.3 }}
-            >
-              <span className="match-token">q: What is Lens?</span>
-              <span className="text-muted">
-                <MotifArrow className="h-3.5 w-3.5" />
-              </span>
-              <span className="match-token good">cited · grounded</span>
-              <span className="match-token bad">salary? refused</span>
-            </motion.div>
-          </div>
+        <AnimatePresence>
+          {showFlank && (
+            <>
+              <motion.aside
+                key="flank-left"
+                className="hero-flank hero-flank--left"
+                initial={reduce ? false : { opacity: 0, x: -28, scale: 0.92 }}
+                animate={
+                  flankActive
+                    ? { opacity: 1, x: 0, scale: 1 }
+                    : { opacity: 0, x: -20, scale: 0.9, filter: "blur(4px)" }
+                }
+                exit={reduce ? undefined : { opacity: 0, x: -24, scale: 0.88, filter: "blur(6px)" }}
+                transition={sideMotion}
+              >
+                <HelloCard />
+              </motion.aside>
+              <motion.aside
+                key="flank-right"
+                className="hero-flank hero-flank--right"
+                initial={reduce ? false : { opacity: 0, x: 28, scale: 0.92 }}
+                animate={
+                  flankActive
+                    ? { opacity: 1, x: 0, scale: 1 }
+                    : { opacity: 0, x: 20, scale: 0.9, filter: "blur(4px)" }
+                }
+                exit={reduce ? undefined : { opacity: 0, x: 24, scale: 0.88, filter: "blur(6px)" }}
+                transition={{ ...sideMotion, delay: reduce ? 0 : 0.04 }}
+              >
+                <HeroAnswerCard />
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
 
-          <motion.aside
-            className="hero-side hero-side--right"
-            initial={reduce ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...spring, delay: 0.18 }}
+        <div className="hero-safe">
+          <motion.div
+            initial={enter}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={spring}
+            className="eyebrow mx-auto"
           >
-            <HeroAnswerCard />
-          </motion.aside>
+            <span className="muni-dot" /> Personal AI with a grounding guard
+          </motion.div>
+          <motion.h1
+            initial={enter}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ ...spring, delay: 0.08 }}
+            className="hero-title font-display"
+          >
+            Meet <span className="text-muni">Muni</span>. The personal AI that only speaks from verified knowledge.
+          </motion.h1>
+          <motion.p
+            initial={enter}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ ...spring, delay: 0.16 }}
+            className="hero-lead mx-auto mt-5 max-w-xl text-muted"
+          >
+            Muni comes from Filipino &quot;muni-muni,&quot; thoughtful reflection. It retrieves Yuan&apos;s knowledge cards, cites every claim, and refuses when evidence is missing.
+          </motion.p>
+          <motion.div
+            initial={enter}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ ...spring, delay: 0.22 }}
+            className="hero-cta mt-6 flex flex-wrap justify-center gap-3"
+          >
+            <Link href="/chat" className="btn-primary">
+              Talk to Muni <MotifArrow />
+            </Link>
+            <a href="#guard" className="btn-secondary">
+              See the guard
+            </a>
+          </motion.div>
+          <motion.div
+            className="grounding-strip"
+            aria-label="Example grounding decision"
+            initial={reduce ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring, delay: 0.3 }}
+          >
+            <span className="match-token">q: What is Lens?</span>
+            <span className="text-muted">
+              <MotifArrow className="h-3.5 w-3.5" />
+            </span>
+            <span className="match-token good">cited · grounded</span>
+            <span className="match-token bad">salary? refused</span>
+          </motion.div>
         </div>
+
+        <AnimatePresence mode="wait">
+          {mode === "stack" && !exiting && (
+            <motion.div
+              key="hero-stack"
+              className="hero-stack"
+              initial={reduce ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduce ? undefined : { opacity: 0, y: 10 }}
+              transition={sideMotion}
+            >
+              <HelloCard compact />
+              <HeroAnswerCard />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
       <MarqueeBand />

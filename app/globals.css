@@ -125,29 +125,33 @@ body {
   overflow: hidden;
   padding: clamp(20px, 4vw, 36px) clamp(16px, 4vw, 24px) clamp(28px, 5vw, 48px);
 }
-.hero-grid {
-  width: min(1180px, 100%);
-  margin: 0 auto;
+.hero-stage--flank {
+  min-height: calc(88svh - 56px);
   display: grid;
-  gap: clamp(16px, 3vw, 24px);
-  align-items: stretch;
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "center"
-    "left"
-    "right";
+  place-items: center;
 }
-.hero-side--left { grid-area: left; min-width: 0; }
-.hero-side--right { grid-area: right; min-width: 0; }
-.hero-safe {
-  grid-area: center;
-  position: relative;
+.hero-wash {
+  position: absolute;
+  inset: 0;
   z-index: 2;
-  width: 100%;
-  max-width: 40rem;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 42% 56% at 50% 46%, rgba(242, 243, 247, 0.96) 0%, rgba(242, 243, 247, 0.72) 48%, transparent 76%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.hero-stage--flank .hero-wash { opacity: 1; }
+
+.hero-safe {
+  position: relative;
+  z-index: 3;
+  width: min(42rem, 100%);
   margin: 0 auto;
   padding: clamp(8px, 2vw, 16px) 0;
   text-align: center;
+}
+.hero-stage--flank .hero-safe {
+  width: min(40rem, 54vw);
 }
 .hero-title {
   margin-top: 1rem;
@@ -162,6 +166,36 @@ body {
   line-height: 1.6;
 }
 
+/* Large floating side cards (old visual weight, still responsive) */
+.hero-flank {
+  position: absolute;
+  top: 11%;
+  z-index: 1;
+  width: min(28vw, 320px);
+}
+.hero-flank--left { left: max(1.25rem, 2%); }
+.hero-flank--right {
+  right: max(1.25rem, 2%);
+  width: min(30vw, 340px);
+  top: 13%;
+}
+
+.hero-stack {
+  position: relative;
+  z-index: 3;
+  width: min(920px, 100%);
+  margin: clamp(18px, 3vw, 28px) auto 0;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .hero-stack {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+}
+
 .muni-hello-card {
   position: relative;
   display: flex;
@@ -169,13 +203,35 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 12px 16px 16px;
+  padding: 16px 18px 18px;
   overflow: hidden;
   height: 100%;
+  min-height: 280px;
+}
+.hero-flank .muni-hello-card {
+  min-height: min(34vw, 360px);
+  padding: 18px 20px 22px;
+  box-shadow: 0 22px 50px -30px rgba(16, 24, 40, 0.35);
+}
+.muni-hello-card--compact {
+  min-height: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
 }
 .muni-hello-mascot {
-  width: clamp(6.5rem, 18vw, 8.5rem);
-  height: clamp(6.5rem, 18vw, 8.5rem);
+  width: clamp(7.5rem, 20vw, 10rem);
+  height: clamp(7.5rem, 20vw, 10rem);
+}
+.hero-flank .muni-hello-mascot {
+  width: min(11rem, 34vw);
+  height: min(11rem, 34vw);
+}
+.muni-hello-card--compact .muni-hello-mascot {
+  width: 5.75rem;
+  height: 5.75rem;
+  flex-shrink: 0;
 }
 .muni-hello-card::before {
   content: "";
@@ -196,6 +252,9 @@ body {
   box-shadow: 0 12px 28px -24px rgba(146, 64, 14, .55);
   text-align: left;
 }
+.muni-hello-card--compact .muni-hello-copy {
+  margin-top: 0;
+}
 .muni-hello-copy::before {
   content: "";
   position: absolute;
@@ -207,6 +266,11 @@ body {
   border-top: 1px solid rgba(217, 119, 6, .2);
   background: #fffaf0;
   transform: translateX(-50%) rotate(45deg);
+}
+.muni-hello-card--compact .muni-hello-copy::before {
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%) rotate(-45deg);
 }
 .muni-hello-kicker {
   display: inline-flex;
@@ -228,6 +292,10 @@ body {
   margin: 7px 0 8px;
   color: var(--ink);
   font: 500 12px/1.45 Figtree, sans-serif;
+}
+.hero-flank .muni-hello-copy p {
+  font-size: 13px;
+  line-height: 1.5;
 }
 .muni-hello-link {
   display: inline-flex;
@@ -252,6 +320,11 @@ body {
   padding: 16px;
   transition: border-color .18s ease;
   min-width: 0;
+}
+.hero-flank .answer-card {
+  padding: 18px;
+  min-height: min(34vw, 360px);
+  box-shadow: 0 22px 50px -30px rgba(16, 24, 40, 0.35);
 }
 .answer-card:hover { border-color: rgba(217,119,6,.35); }
 
@@ -983,67 +1056,6 @@ th {
   position: relative;
   z-index: 20;
   overflow: visible;
-}
-
-/* Tablet+: two side cards under the center copy */
-@media (min-width: 768px) {
-  .hero-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "center center"
-      "left right";
-    align-items: start;
-  }
-  .muni-hello-card {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    padding: 14px;
-  }
-  .muni-hello-mascot {
-    width: 5.75rem;
-    height: 5.75rem;
-    flex-shrink: 0;
-  }
-  .muni-hello-copy {
-    margin-top: 0;
-  }
-  .muni-hello-copy::before {
-    top: 50%;
-    left: -6px;
-    transform: translateY(-50%) rotate(-45deg);
-  }
-}
-
-/* Wide desktop: true 3-column hero with room for side cards */
-@media (min-width: 1200px) {
-  .hero-stage {
-    min-height: calc(86svh - 56px);
-    display: grid;
-    align-items: center;
-  }
-  .hero-grid {
-    grid-template-columns: minmax(230px, 270px) minmax(0, 1fr) minmax(250px, 300px);
-    grid-template-areas: "left center right";
-    align-items: center;
-    gap: 20px;
-  }
-  .hero-safe {
-    max-width: 36rem;
-  }
-  .muni-hello-card {
-    flex-direction: column;
-    padding: 12px 16px 16px;
-  }
-  .muni-hello-mascot {
-    width: 8rem;
-    height: 8rem;
-  }
-  .muni-hello-copy::before {
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-  }
 }
 
 @media (min-width: 1024px) {
