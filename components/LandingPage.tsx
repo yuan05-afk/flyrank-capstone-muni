@@ -48,13 +48,25 @@ export function LandingPage() {
       <section className="hero-stage">
         <motion.div
           className="companion left"
-          aria-hidden="true"
           initial={reduce ? false : { opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ ...spring, delay: 0.15 }}
         >
-          <div className="surface flex h-full items-center justify-center p-4">
-            <MuniMascot state="wave" className="h-40 w-40" />
+          <div className="surface muni-hello-card h-full">
+            <MuniMascot state="wave" className="h-36 w-36" />
+            <div className="muni-hello-copy">
+              <span className="muni-hello-kicker">
+                <span className="muni-hello-dot" aria-hidden="true" />
+                Kumusta!
+              </span>
+              <p>
+                I&apos;m Muni. Ask me about Yuan&apos;s work, and I&apos;ll answer
+                from verified sources.
+              </p>
+              <Link href="/chat" className="muni-hello-link focus-ring">
+                Come say hello <MotifArrow className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           </div>
         </motion.div>
         <motion.div

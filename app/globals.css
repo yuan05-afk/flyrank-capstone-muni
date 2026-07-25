@@ -152,6 +152,82 @@ body {
 .companion.right { right: 2%; }
 .cite-stack { display: grid; gap: 10px; padding: 18px; }
 
+.muni-hello-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 12px 18px 18px;
+  overflow: hidden;
+}
+.muni-hello-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--muni), var(--muni-bright), transparent);
+  opacity: .65;
+}
+.muni-hello-copy {
+  position: relative;
+  width: 100%;
+  margin-top: -8px;
+  padding: 12px 14px 11px;
+  border: 1px solid rgba(217, 119, 6, .2);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(254, 243, 199, .58), rgba(255, 255, 255, .92));
+  box-shadow: 0 12px 28px -24px rgba(146, 64, 14, .55);
+  text-align: left;
+}
+.muni-hello-copy::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 11px;
+  height: 11px;
+  border-left: 1px solid rgba(217, 119, 6, .2);
+  border-top: 1px solid rgba(217, 119, 6, .2);
+  background: #fffaf0;
+  transform: translateX(-50%) rotate(45deg);
+}
+.muni-hello-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #92400e;
+  font: 600 9px/1 "IBM Plex Mono", monospace;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.muni-hello-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--muni-bright);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, .13);
+}
+.muni-hello-copy p {
+  margin: 7px 0 8px;
+  color: var(--ink);
+  font: 500 12px/1.45 Figtree, sans-serif;
+}
+.muni-hello-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muni);
+  font: 650 11px/1 Figtree, sans-serif;
+  text-decoration: none;
+  transition: color .15s ease, gap .15s ease;
+}
+.muni-hello-link:hover {
+  gap: 8px;
+  color: #92400e;
+}
+
 .answer-card {
   display: flex;
   flex-direction: column;
