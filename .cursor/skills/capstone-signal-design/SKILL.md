@@ -217,10 +217,13 @@ const lenis = new Lenis({
 
 ### Framer Motion
 
-- Hero lines: blur + y reveal
-- Sections: `whileInView` with **`once: true`** (do not leave chapters stuck at partial opacity via scroll-linked transforms)
+- Hero lines: blur + y reveal (one-shot on load)
+- Sections: `whileInView` with **`once: false`** so reveals replay when scrolling up and down (matches CheckMyDevice)
+- Chapter wrappers: scroll-linked `opacity` / `y` / `scale` via `useScroll` + `useTransform` (transform-only; keep opacity floors high enough that chapters never look stuck faded)
+- Prefer opacity + translate on scroll re-entry; reserve `filter: blur` for hero first paint, not every chapter
 - Cards: stagger children + hover `translateY(-4px)` / color shifts
 - Dashboard: staggered stats, count-up numbers, row cascade
+- Respect `prefers-reduced-motion` (skip Lenis + scroll-linked styles)
 
 ### Continuous accents
 
@@ -562,7 +565,7 @@ Leave empty - the public repo link covers completion credit.
 - [ ] `lenis` installed and active on marketing pages
 - [ ] Custom Signal scrollbars on `html` plus `.signal-scroll` for nested /
       horizontal overflow (Firefox `scrollbar-color` included)
-- [ ] Framer Motion hero + chapter enters (`once: true`)
+- [ ] Framer Motion hero + chapter enters (`once: false`, scroll up/down)
 - [ ] Hero image with **visible left + right** art and **center text safe zone**
 - [ ] Hero wash protects center without ghosting the side art
 - [ ] Feature, step, and trust cards all have hover + focus interactivity
