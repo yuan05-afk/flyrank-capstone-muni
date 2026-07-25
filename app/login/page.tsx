@@ -33,7 +33,7 @@ export default function LoginPage() {
     <main className="hero-mesh min-h-screen">
       <SiteHeader
         links={[
-          { href: "/", label: "Marketing" },
+          { href: "/", label: "Home" },
           { href: "/chat", label: "Chat with Muni", primary: true },
         ]}
       />

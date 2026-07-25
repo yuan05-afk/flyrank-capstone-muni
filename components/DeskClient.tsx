@@ -142,7 +142,7 @@ export function DeskClient() {
   if (busy === "boot" || !inbox) {
     return (
       <main className="hero-mesh min-h-screen">
-        <SiteHeader links={[{ href: "/chat", label: "Chat" }, { href: "/", label: "Marketing" }]} />
+        <SiteHeader links={[{ href: "/chat", label: "Chat" }, { href: "/", label: "Home" }]} />
         <div className="mx-auto max-w-7xl space-y-5 px-4 py-8 sm:px-5">
           <div className="skeleton-pulse h-10 w-64 rounded-xl" />
           <div className="skeleton-pulse h-[420px] rounded-2xl" />

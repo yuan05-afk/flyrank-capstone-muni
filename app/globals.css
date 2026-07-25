@@ -1019,6 +1019,20 @@ th {
   cursor: not-allowed;
   transform: none;
 }
+.suggestion-stage-grid {
+  display: grid;
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .suggestion-stage-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.suggestion-card--stage {
+  height: 100%;
+  padding: 14px;
+  box-shadow: 0 1px 0 rgba(16, 24, 40, 0.03);
+}
 
 .composer {
   border-top: 1px solid var(--line);
@@ -1100,6 +1114,10 @@ th {
   min-height: 10rem;
   max-height: min(22rem, 42svh);
   overflow-y: auto;
+}
+.chat-thread.is-empty {
+  /* Give starter prompts room so Try these is not clipped. */
+  max-height: min(34rem, 58svh);
 }
 .chat-composer {
   flex-shrink: 0;

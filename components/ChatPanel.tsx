@@ -101,6 +101,55 @@ function TypingDots() {
   );
 }
 
+function SuggestionList({
+  suggestions,
+  audience,
+  busy,
+  reduce,
+  onPick,
+  layout = "rail",
+}: {
+  suggestions: AudienceSuggestion[];
+  audience: Audience;
+  busy: boolean;
+  reduce: boolean | null;
+  onPick: (item: AudienceSuggestion) => void;
+  layout?: "rail" | "stage";
+}) {
+  return (
+    <div className={layout === "stage" ? "suggestion-stage-grid" : "space-y-2"}>
+      {suggestions.map((item, index) => (
+        <motion.button
+          key={`${audience}-${item.question}`}
+          type="button"
+          initial={reduce ? false : { opacity: 0, y: layout === "stage" ? 10 : 0, x: layout === "rail" ? -8 : 0 }}
+          animate={{ opacity: 1, y: 0, x: 0 }}
+          transition={{ delay: index * 0.05 }}
+          disabled={busy}
+          className={`suggestion-card focus-ring ${item.kind === "refuse-demo" ? "is-refuse" : ""} ${
+            layout === "stage" ? "suggestion-card--stage" : ""
+          }`}
+          onClick={() => onPick(item)}
+        >
+          <span className="flex items-start justify-between gap-2">
+            <span className="font-display text-sm font-semibold text-ink">{item.label}</span>
+            <span
+              className={`badge shrink-0 ${
+                item.kind === "refuse-demo" ? "badge-danger" : "badge-ok"
+              }`}
+            >
+              {item.kind === "refuse-demo" ? "refuse demo" : "grounds"}
+            </span>
+          </span>
+          <span className="mt-1 block text-left text-xs leading-relaxed text-muted">
+            {item.question}
+          </span>
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
 export function ChatPanel() {
   const reduce = useReducedMotion();
   const [booting, setBooting] = useState(true);
@@ -299,7 +348,7 @@ export function ChatPanel() {
       <main className="hero-mesh min-h-screen">
         <SiteHeader
           links={[
-            { href: "/", label: "Marketing" },
+            { href: "/", label: "Home" },
             { href: "/login", label: "Owner desk", primary: true },
           ]}
         />
@@ -330,7 +379,7 @@ export function ChatPanel() {
     <main className="hero-mesh min-h-screen">
       <SiteHeader
         links={[
-          { href: "/", label: "Marketing" },
+          { href: "/", label: "Home" },
           { href: "/#contact", label: "Contact" },
           { href: "/login", label: "Owner desk", primary: true },
         ]}
@@ -359,42 +408,25 @@ export function ChatPanel() {
             <AudienceSelect value={audience} onChange={onAudienceChange} />
           </div>
 
-          <div className="relative z-10 mt-5">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-                Try these
-              </p>
-              <span className="mono text-[9px] text-muted">verified asks</span>
+          {/* After the first turn, keep a compact rail so demos stay one click away. */}
+          {messages.length > 0 && (
+            <div className="relative z-10 mt-5">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                  Try these
+                </p>
+                <span className="mono text-[9px] text-muted">verified asks</span>
+              </div>
+              <SuggestionList
+                suggestions={opener.suggestions}
+                audience={audience}
+                busy={busy}
+                reduce={reduce}
+                onPick={onSuggestion}
+                layout="rail"
+              />
             </div>
-            <div className="space-y-2">
-              {opener.suggestions.map((item, index) => (
-                <motion.button
-                  key={`${audience}-${item.question}`}
-                  type="button"
-                  initial={reduce ? false : { opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  disabled={busy}
-                  className={`suggestion-card focus-ring ${item.kind === "refuse-demo" ? "is-refuse" : ""}`}
-                  onClick={() => onSuggestion(item)}
-                >
-                  <span className="flex items-start justify-between gap-2">
-                    <span className="font-display text-sm font-semibold text-ink">{item.label}</span>
-                    <span
-                      className={`badge shrink-0 ${
-                        item.kind === "refuse-demo" ? "badge-danger" : "badge-ok"
-                      }`}
-                    >
-                      {item.kind === "refuse-demo" ? "refuse demo" : "grounds"}
-                    </span>
-                  </span>
-                  <span className="mt-1 block text-left text-xs leading-relaxed text-muted">
-                    {item.question}
-                  </span>
-                </motion.button>
-              ))}
-            </div>
-          </div>
+          )}
 
           <ContactSection compact />
         </aside>
@@ -430,7 +462,12 @@ export function ChatPanel() {
             </div>
           </div>
 
-          <div ref={scrollerRef} className="signal-scroll chat-thread space-y-3 pr-1">
+          <div
+            ref={scrollerRef}
+            className={`signal-scroll chat-thread space-y-3 pr-1 ${
+              messages.length === 0 ? "is-empty" : ""
+            }`}
+          >
             {messages.length === 0 && (
               <motion.div
                 initial={reduce ? false : { opacity: 0, y: 8 }}
@@ -442,9 +479,25 @@ export function ChatPanel() {
                 </div>
                 <p className="font-display text-sm font-semibold sm:text-base">Start with a verified ask</p>
                 <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-muted sm:text-sm">
-                  Try Muni, Lens, stack, or Capstone projects. If Muni refuses, keep typing - that
-                  leaves a note in Yuan&apos;s owner inbox.
+                  Pick a prompt below, or type your own. Grounded asks cite cards. Weak grounding
+                  refuses, and that still leaves a note in Yuan&apos;s owner inbox.
                 </p>
+                <div className="mt-5 w-full max-w-2xl text-left">
+                  <div className="mb-2 flex items-center justify-between gap-2 px-0.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                      Try these
+                    </p>
+                    <span className="mono text-[9px] text-muted">verified asks</span>
+                  </div>
+                  <SuggestionList
+                    suggestions={opener.suggestions}
+                    audience={audience}
+                    busy={busy}
+                    reduce={reduce}
+                    onPick={onSuggestion}
+                    layout="stage"
+                  />
+                </div>
               </motion.div>
             )}
 
