@@ -11,9 +11,11 @@
   --muni: #d97706;
   --muni-bright: #f59e0b;
   --fog: #fef3c7;
-  --scroll-track: #eef1f6;
-  --scroll-thumb: #c5cdd8;
+  /* Muni scrollbars: warm amber-tinted stone that deepens to brand amber. */
+  --scroll-track: #efe9df;
+  --scroll-thumb: #d8c6a4;
   --scroll-thumb-hover: #d97706;
+  --scroll-thumb-active: #b45309;
 }
 
 * { box-sizing: border-box; }
@@ -36,6 +38,11 @@ html::-webkit-scrollbar-thumb:hover {
   background: var(--scroll-thumb-hover);
   border: 2px solid var(--scroll-track);
 }
+html::-webkit-scrollbar-thumb:active {
+  background: var(--scroll-thumb-active);
+  border: 2px solid var(--scroll-track);
+}
+html::-webkit-scrollbar-corner { background: var(--scroll-track); }
 
 body {
   margin: 0;
@@ -812,6 +819,8 @@ body {
   background-clip: padding-box;
 }
 .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+.table-wrap::-webkit-scrollbar-thumb:active { background: var(--scroll-thumb-active); }
+.table-wrap::-webkit-scrollbar-corner { background: transparent; }
 table { width: 100%; border-collapse: collapse; min-width: 720px; }
 th, td {
   padding: 13px 14px;
@@ -845,6 +854,10 @@ th {
 }
 .signal-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--scroll-thumb-hover);
+  border: 2px solid var(--scroll-track);
+}
+.signal-scroll::-webkit-scrollbar-thumb:active {
+  background: var(--scroll-thumb-active);
   border: 2px solid var(--scroll-track);
 }
 .signal-scroll::-webkit-scrollbar-corner { background: transparent; }
