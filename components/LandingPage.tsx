@@ -46,90 +46,93 @@ export function LandingPage() {
       />
 
       <section className="hero-stage">
-        <motion.div
-          className="companion left"
-          initial={reduce ? false : { opacity: 0, x: -24 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ ...spring, delay: 0.15 }}
-        >
-          <div className="surface muni-hello-card h-full">
-            <MuniMascot state="wave" className="h-36 w-36" />
-            <div className="muni-hello-copy">
-              <span className="muni-hello-kicker">
-                <span className="muni-hello-dot" aria-hidden="true" />
-                Kumusta!
-              </span>
-              <p>
-                I&apos;m Muni. Ask me about Yuan&apos;s work, and I&apos;ll answer
-                from verified sources.
-              </p>
-              <Link href="/chat" className="muni-hello-link focus-ring">
-                Come say hello <MotifArrow className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-        <motion.div
-          className="companion right"
-          initial={reduce ? false : { opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ ...spring, delay: 0.2 }}
-        >
-          <HeroAnswerCard />
-        </motion.div>
-        <div className="hero-wash" />
-        <div className="hero-safe">
-          <motion.div
-            initial={enter}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={spring}
-            className="eyebrow mx-auto"
-          >
-            <span className="muni-dot" /> Personal AI with a grounding guard
-          </motion.div>
-          <motion.h1
-            initial={enter}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ ...spring, delay: 0.08 }}
-            className="font-display mt-5 text-balance text-[clamp(2.4rem,8vw,4.5rem)] font-bold leading-[.98] tracking-[-.05em]"
-          >
-            Meet <span className="text-muni">Muni</span>. The personal AI that only speaks from verified knowledge.
-          </motion.h1>
-          <motion.p
-            initial={enter}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ ...spring, delay: 0.16 }}
-            className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg"
-          >
-            Muni comes from Filipino &quot;muni-muni,&quot; thoughtful reflection. It retrieves Yuan&apos;s knowledge cards, cites every claim, and refuses when evidence is missing.
-          </motion.p>
-          <motion.div
-            initial={enter}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ ...spring, delay: 0.22 }}
-            className="hero-cta mt-7 flex flex-wrap justify-center gap-3"
-          >
-            <Link href="/chat" className="btn-primary">
-              Talk to Muni <MotifArrow />
-            </Link>
-            <a href="#guard" className="btn-secondary">
-              See the guard
-            </a>
-          </motion.div>
-          <motion.div
-            className="grounding-strip"
-            aria-label="Example grounding decision"
-            initial={reduce ? false : { opacity: 0, y: 10 }}
+        <div className="hero-grid">
+          <motion.aside
+            className="hero-side hero-side--left"
+            initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...spring, delay: 0.3 }}
+            transition={{ ...spring, delay: 0.12 }}
           >
-            <span className="match-token">q: What is Lens?</span>
-            <span className="text-muted">
-              <MotifArrow className="h-3.5 w-3.5" />
-            </span>
-            <span className="match-token good">cited · grounded</span>
-            <span className="match-token bad">salary? refused</span>
-          </motion.div>
+            <div className="surface muni-hello-card h-full">
+              <MuniMascot state="wave" className="muni-hello-mascot" />
+              <div className="muni-hello-copy">
+                <span className="muni-hello-kicker">
+                  <span className="muni-hello-dot" aria-hidden="true" />
+                  Kumusta!
+                </span>
+                <p>
+                  I&apos;m Muni. Ask me about Yuan&apos;s work, and I&apos;ll answer
+                  from verified sources.
+                </p>
+                <Link href="/chat" className="muni-hello-link focus-ring">
+                  Come say hello <MotifArrow className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+          </motion.aside>
+
+          <div className="hero-safe">
+            <motion.div
+              initial={enter}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={spring}
+              className="eyebrow mx-auto"
+            >
+              <span className="muni-dot" /> Personal AI with a grounding guard
+            </motion.div>
+            <motion.h1
+              initial={enter}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ ...spring, delay: 0.08 }}
+              className="hero-title font-display"
+            >
+              Meet <span className="text-muni">Muni</span>. The personal AI that only speaks from verified knowledge.
+            </motion.h1>
+            <motion.p
+              initial={enter}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ ...spring, delay: 0.16 }}
+              className="hero-lead mx-auto mt-5 max-w-xl text-muted"
+            >
+              Muni comes from Filipino &quot;muni-muni,&quot; thoughtful reflection. It retrieves Yuan&apos;s knowledge cards, cites every claim, and refuses when evidence is missing.
+            </motion.p>
+            <motion.div
+              initial={enter}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ ...spring, delay: 0.22 }}
+              className="hero-cta mt-6 flex flex-wrap justify-center gap-3"
+            >
+              <Link href="/chat" className="btn-primary">
+                Talk to Muni <MotifArrow />
+              </Link>
+              <a href="#guard" className="btn-secondary">
+                See the guard
+              </a>
+            </motion.div>
+            <motion.div
+              className="grounding-strip"
+              aria-label="Example grounding decision"
+              initial={reduce ? false : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spring, delay: 0.3 }}
+            >
+              <span className="match-token">q: What is Lens?</span>
+              <span className="text-muted">
+                <MotifArrow className="h-3.5 w-3.5" />
+              </span>
+              <span className="match-token good">cited · grounded</span>
+              <span className="match-token bad">salary? refused</span>
+            </motion.div>
+          </div>
+
+          <motion.aside
+            className="hero-side hero-side--right"
+            initial={reduce ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...spring, delay: 0.18 }}
+          >
+            <HeroAnswerCard />
+          </motion.aside>
         </div>
       </section>
 
