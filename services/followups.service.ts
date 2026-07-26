@@ -44,7 +44,7 @@ export function buildFollowUps(input: {
   }
 
   if (input.status === "refused" || input.status === "guarded") {
-    push("College + FEU", "Where does Yuan go to college and what is Yuan studying?");
+    push("Studies at FEU", "Where does Yuan go to college and what is Yuan studying?");
     push("Shipped Capstones", "What Capstone projects has Yuan shipped?");
     push("Contact Yuan", "How can someone contact Yuan?");
     return out.slice(0, 3);
