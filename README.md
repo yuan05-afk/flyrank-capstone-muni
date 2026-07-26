@@ -148,7 +148,7 @@ Clone the repository first, copy env, then install and start the app:
 git clone https://github.com/yuan05-afk/flyrank-capstone-muni.git
 cd flyrank-capstone-muni
 cp .env.example .env
-# Edit DATABASE_URL to your Neon or local Postgres URL
+# Edit DATABASE_URL to a Neon development branch (never the production branch)
 pnpm install
 pnpm db:push
 pnpm db:seed
@@ -236,9 +236,10 @@ and [docs/diagram.md](docs/diagram.md).
 - Seed embeddings are deterministic feature hashing for zero-key demos, not a
   production embedding model. Optional live chat (Groq/Gemini) uses the same
   guard contracts.
-- Production targets **Postgres (Neon)** on Vercel; local dev uses the same
-  `DATABASE_URL` shape. Job claiming uses leases suitable for this demo; very
-  high concurrency would need tighter row locking tuning.
+- Production targets **Postgres (Neon)** on Vercel; local dev uses a separate
+  Neon `development` branch so tests and evals never write into production
+  conversations and answers. Job claiming uses leases suitable for this demo;
+  very high concurrency would need tighter row locking tuning.
 - Manual Vercel deploy steps live in [VERCEL.md](VERCEL.md). `NEXT_PUBLIC_*`
   Capstone URL env vars are placeholders until chat and cards cite live sibling
   Capstone domains.
