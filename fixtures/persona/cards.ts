@@ -17,14 +17,14 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "bio",
     title: "About Yuan",
-    body: "Yuan Andrei C. Mariano goes by Yuan. Yuan is a Bachelor of Science in Computer Science student specializing in Data Science at Far Eastern University (FEU), and a FlyRankAI intern building Capstone products across Backend AI Engineering and General AI Fluency. Yuan has training in machine learning, data analysis, artificial intelligence, and software engineering, with hands-on experience from academic projects, collaborative work, and technical tasks in data modeling, programming, problem-solving, algorithm development, and data-driven solutions. Recently Yuan shipped four live FlyRank Capstones: Checkpoint, Lens, Broadcast, and Muni. Yuan is based in the Philippines.",
+    body: "Yuan is a Bachelor of Science in Computer Science student specializing in Data Science at Far Eastern University (FEU), and a FlyRankAI intern building Capstone products across Backend AI Engineering and General AI Fluency. Yuan's full name is Yuan Andrei C. Mariano, and Yuan usually goes by Yuan. Yuan has training in machine learning, data analysis, artificial intelligence, and software engineering, with hands-on experience from academic projects, collaborative work, and technical tasks in data modeling, programming, problem-solving, algorithm development, and data-driven solutions. Recently Yuan shipped four live FlyRank Capstones: Checkpoint, Lens, Broadcast, and Muni. Yuan is based in the Philippines.",
     sourceId: "persona.bio",
     tags: ["yuan", "andrei", "mariano", "who", "about", "bio", "introduction", "philippines", "intern", "flyrank"],
   },
   {
     kind: "bio",
     title: "Full name and identity",
-    body: "Yuan's full name is Yuan Andrei C. Mariano. In product work and Capstones, Yuan usually goes by Yuan. Muni is Yuan's grounded personal agent and digital twin for verified questions about work, skills, education at the college level, and shipped projects.",
+    body: "Yuan's full name is Yuan Andrei C. Mariano. In product work and Capstones, people usually call Yuan by the short name Yuan. Muni is Yuan's grounded personal agent and digital twin for verified questions about work, skills, college education, and shipped projects.",
     sourceId: "persona.identity",
     tags: ["name", "full name", "yuan andrei", "mariano", "identity", "who are you"],
   },
@@ -164,7 +164,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "faq",
     title: "Who is Yuan?",
-    body: "Yuan Andrei C. Mariano is a FEU BS Computer Science (Data Science) student, Dean's and President's Lister, FlyRankAI intern, and builder of four live Capstones: Checkpoint, Lens, Broadcast, and Muni. Ask Muni about college education, skills, projects, organizations, or how to leave a note. Muni will refuse private details that are not in the verified cards.",
+    body: "Yuan is a FEU BS Computer Science (Data Science) student, Dean's and President's Lister, FlyRankAI intern, and builder of four live Capstones: Checkpoint, Lens, Broadcast, and Muni. Yuan's full name is Yuan Andrei C. Mariano. Ask Muni about college education, skills, projects, organizations, or how to leave a note. Muni will refuse private details that are not in the verified cards.",
     sourceId: "persona.faq.who",
     tags: ["who is yuan", "about yuan", "introduce", "summary"],
   },
@@ -185,7 +185,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "faq",
     title: "Is Yuan open to opportunities?",
-    body: "Yuan is actively building as a FlyRankAI intern and FEU Computer Science (Data Science) student. For internship, collaboration, or project opportunities, leave a note in Muni chat or reach out via GitHub at https://github.com/yuan05-afk. Muni can describe skills and shipped work from verified cards, then Yuan can follow up personally.",
+    body: "Yuan is actively building as a FlyRankAI intern and FEU Computer Science (Data Science) student. For internship, collaboration, or project opportunities, leave a note in Muni chat or open Yuan's GitHub profile at https://github.com/yuan05-afk. Muni can describe skills and shipped work from verified cards, then Yuan can follow up personally.",
     sourceId: "persona.faq.opportunities",
     tags: ["opportunity", "available", "hire", "open to work", "collaborate", "internship offer"],
   },

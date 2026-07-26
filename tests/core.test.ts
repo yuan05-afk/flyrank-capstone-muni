@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { groundedAnswerSchema } from "@/lib/validation";
+import { splitSentences } from "@/lib/sentences";
 import {
   guardGrounding,
   isSensitivePrivateQuestion,
@@ -10,6 +11,17 @@ import { cosineSimilarity } from "@/lib/similarity";
 import { chatService } from "@/services/chat.service";
 import { jobsRepository, knowledgeRepository } from "@/repositories";
 import { GROUNDING_POLICY_ID } from "@/config/guard.config";
+
+describe("sentence splitting", () => {
+  it("keeps middle initials attached to the full name", () => {
+    const parts = splitSentences(
+      "Yuan Andrei C. Mariano is a FEU student. Yuan builds Capstones."
+    );
+    expect(parts[0]).toContain("Yuan Andrei C. Mariano");
+    expect(parts[0]).not.toBe("Yuan Andrei C.");
+    expect(parts).toHaveLength(2);
+  });
+});
 
 describe("grounded answer schema", () => {
   it("accepts valid structured output", () => {
@@ -142,6 +154,19 @@ describe("chat decision core", () => {
     expect(result.answer.status).toBe("grounded");
     expect(result.answer.answer.toLowerCase()).toMatch(/yuan|flyrank|capstone/);
     expect(result.answer.answer.toLowerCase()).not.toContain("do not have verified knowledge");
+    expect(result.answer.answer).not.toMatch(/^Mariano\b/);
+    expect(result.answer.answer).not.toMatch(/Yuan Andrei C\.(?!\s*Mariano)/);
+  });
+
+  it("keeps opportunity answers grammatical with GitHub link intact", async () => {
+    const result = await chatService.ask({
+      question: "Is Yuan open to internship or collaboration opportunities?",
+    });
+    expect(result.answer.status).toBe("grounded");
+    expect(result.answer.answer.toLowerCase()).toMatch(/internship|collaboration|github|note/);
+    expect(result.answer.answer).toContain("https://github.com/yuan05-afk");
+    expect(result.answer.answer).not.toMatch(/GitHub at Muni/i);
+    expect(result.answer.answer).not.toMatch(/Yuan Andrei C\.(?!\s*Mariano)/);
   });
 
   it("keeps conversation memory for expound follow-ups", async () => {

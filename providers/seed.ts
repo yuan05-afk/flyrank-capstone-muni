@@ -1,4 +1,5 @@
 import { groundedAnswerSchema, type GroundedAnswer } from "@/lib/validation";
+import { splitSentences } from "@/lib/sentences";
 import type { ChatProvider, EmbeddingProvider } from "./contracts";
 
 const DIMS = 64;
@@ -36,7 +37,7 @@ const STOP = new Set([
   "a", "an", "the", "and", "or", "of", "to", "for", "in", "on", "is", "are",
   "was", "what", "who", "how", "does", "did", "about", "with", "from", "which",
   "like", "using", "this", "that", "can", "you", "me", "more", "please", "tell",
-  "has", "have", "yuan",
+  "has", "have",
 ]);
 
 function queryTokens(question: string): string[] {
@@ -52,6 +53,9 @@ function cardRelevance(
   const hay = tokenize(`${card.title} ${card.body} ${card.kind}`).join(" ");
   const hits = tokens.filter((token) => hay.includes(token)).length;
   let score = hits / tokens.length;
+  if (/who is yuan|about yuan/i.test(question) && /who is yuan|about yuan/i.test(card.title)) {
+    score += 0.5;
+  }
   if (/project|capstone|portfolio/i.test(`${card.kind} ${card.title}`) &&
       /\b(capstone|project|shipped|portfolio)\b/i.test(question)) {
     score += 0.35;
@@ -68,16 +72,17 @@ function cardRelevance(
 
 function bestSentences(text: string, question: string, budget: number): string {
   const tokens = queryTokens(question);
-  const sentences = text
-    .split(/(?<=[.!?])\s+/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-  if (!sentences.length) return text.slice(0, 240);
+  const sentences = splitSentences(text);
+  if (!sentences.length) return text.slice(0, 280);
 
   const ranked = sentences
     .map((sentence, index) => {
       const hay = tokenize(sentence).join(" ");
-      const hits = tokens.filter((token) => hay.includes(token)).length;
+      let hits = tokens.filter((token) => hay.includes(token)).length;
+      // Prefer sentences that keep Yuan as the subject for identity asks.
+      if (/who is yuan|about yuan/i.test(question) && /^yuan\b/i.test(sentence)) hits += 2;
+      // Avoid orphan fragments that start with a surname leftover.
+      if (/^mariano\b/i.test(sentence)) hits -= 5;
       return { sentence, index, hits };
     })
     .sort((a, b) => b.hits - a.hits || a.index - b.index);
@@ -90,6 +95,15 @@ function bestSentences(text: string, question: string, budget: number): string {
 
   if (chosen.length) return chosen.join(" ");
   return sentences.slice(0, budget).join(" ");
+}
+
+function cleanupProse(text: string): string {
+  return text
+    .replace(/\b(Live demo|Live links|Demo|Live site)\s*:?\s*(?=[.\s]|$)/gi, "")
+    .replace(/\s+([.?!,;:])/g, "$1")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+\(/g, " (")
+    .trim();
 }
 
 export class SeedEmbeddingProvider implements EmbeddingProvider {
@@ -133,31 +147,13 @@ export class SeedChatProvider implements ChatProvider {
     const primary = ranked[0];
     const support = ranked.slice(0, input.followUp ? 3 : 2);
 
-    const primaryNoUrls = primary.body
-      .replace(/\s*https?:\/\/[^\s<]+[^\s.,!?)<]*/g, "")
-      .replace(/\b(Live demo|Live links|Demo|Live site)\s*:?\s*(?=[.\s]|$)/gi, "")
-      .replace(/\s*[:;]\s*\./g, ".")
-      .replace(/\.{2,}/g, ".")
-      .replace(/\s{2,}/g, " ")
-      .replace(/\s+\(/g, " (")
-      .trim();
-
     const sentenceBudget = input.followUp ? 3 : 2;
-    const lead = (
-      bestSentences(primaryNoUrls, input.question, sentenceBudget) ||
-      primaryNoUrls.slice(0, 240)
-    ).trim();
+    // Keep URLs inside the chosen sentences so contact/GitHub lines stay grammatical.
+    let lead = cleanupProse(bestSentences(primary.body, input.question, sentenceBudget));
 
     const supportExtra =
       input.followUp && support[1]
-        ? ` ${bestSentences(
-            support[1].body
-              .replace(/\s*https?:\/\/[^\s<]+[^\s.,!?)<]*/g, "")
-              .replace(/\s{2,}/g, " ")
-              .trim(),
-            input.question,
-            1
-          )}`
+        ? cleanupProse(bestSentences(support[1].body, input.question, 1))
         : "";
 
     const links: string[] = [];
@@ -168,22 +164,24 @@ export class SeedChatProvider implements ChatProvider {
       }
     }
 
-    const answer = [
-      lead.endsWith(".") || lead.endsWith("!") || lead.endsWith("?") ? lead : `${lead}.`,
-      supportExtra.trim() ? ` ${supportExtra.trim().replace(/\.*$/, ".")}` : "",
-      links.length ? ` You can open it live here: ${links.join(" | ")}` : "",
-    ].join("");
+    let answer = lead.endsWith(".") || lead.endsWith("!") || lead.endsWith("?") ? lead : `${lead}.`;
+    if (supportExtra && !answer.includes(supportExtra)) {
+      const extra = supportExtra.endsWith(".") ? supportExtra : `${supportExtra}.`;
+      answer = `${answer} ${extra}`;
+    }
+
+    // Only append a live-link trailer when the answer does not already include the URL.
+    const missingLinks = links.filter((url) => !answer.includes(url));
+    if (missingLinks.length) {
+      answer = `${answer} You can open it here: ${missingLinks.join(" | ")}`;
+    }
 
     return groundedAnswerSchema.parse({
       answer: answer.trim(),
       citations: support.map((card) => {
         const urls = card.body.match(URL_PATTERN) ?? [];
         const firstUrl = urls[0];
-        const prose = card.body
-          .replace(/\s*https?:\/\/[^\s<]+[^\s.,!?)<]*/g, "")
-          .replace(/\s{2,}/g, " ")
-          .trim()
-          .slice(0, 160);
+        const prose = cleanupProse(card.body.replace(URL_PATTERN, "").trim()).slice(0, 160);
         const quoteText = firstUrl ? `${prose} ${firstUrl}`.slice(0, 400) : prose.slice(0, 200);
         return { cardId: card.id, title: card.title, quote: quoteText };
       }),
