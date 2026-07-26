@@ -22,7 +22,7 @@ const REFUSAL =
 function socialReply(audience?: string) {
   const key = (audience || "general") as Audience;
   const opener = AUDIENCE_OPENERS[key] ?? AUDIENCE_OPENERS.general;
-  return `Hi. I am Muni. ${opener.opener} I only answer from verified knowledge cards, so ask about Yuan's Capstones, stack, Lens, Broadcast, or how to get in touch.`;
+  return `Hi. I am Muni. ${opener.opener} I only answer from verified knowledge cards, so ask about Yuan's college at FEU, Capstones, stack, skills, organizations, or how to get in touch via GitHub or a chat note.`;
 }
 
 function parseCitations(raw: string | null | undefined) {

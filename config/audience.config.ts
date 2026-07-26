@@ -23,6 +23,11 @@ export const AUDIENCE_OPENERS: Record<
     blurb: "Skills, shipped work, stack",
     suggestions: [
       {
+        label: "College + FEU",
+        question: "Where does Yuan go to college and what is Yuan studying?",
+        kind: "grounded",
+      },
+      {
         label: "Shipped projects",
         question: "What Capstone projects has Yuan shipped?",
         kind: "grounded",
@@ -30,11 +35,6 @@ export const AUDIENCE_OPENERS: Record<
       {
         label: "Preferred stack",
         question: "Which technologies does Yuan like using for Capstone AI apps?",
-        kind: "grounded",
-      },
-      {
-        label: "Backend AI craft",
-        question: "What backend AI craft does Yuan focus on?",
         kind: "grounded",
       },
     ],
@@ -120,8 +120,8 @@ export const AUDIENCE_OPENERS: Record<
         kind: "grounded",
       },
       {
-        label: "What is Muni?",
-        question: "What is Muni?",
+        label: "College + FEU",
+        question: "Where does Yuan study and what program?",
         kind: "grounded",
       },
       {

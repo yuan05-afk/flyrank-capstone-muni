@@ -317,7 +317,7 @@ export function LandingPage() {
       <ScrollChapter className="chapter">
         <div className="grid-3">
           {[
-            ["10", "verified knowledge cards"],
+            ["35", "verified knowledge cards"],
             ["4", "live Capstone demos"],
             ["0.80+", "eval floors"],
           ].map(([v, l], index) => (

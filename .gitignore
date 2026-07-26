@@ -11,3 +11,9 @@ cookies.txt
 tsconfig.tsbuildinfo
 .vercel
 .env*
+# Personal resume uploads / local extracts - never commit
+Yuan_Andrei_Mariano_Internship_Resume.pdf
+*Resume*.pdf
+*resume*.pdf
+_resume_extract_tmp.txt
+*_resume*extract*.txt
