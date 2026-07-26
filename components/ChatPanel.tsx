@@ -18,11 +18,11 @@ type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   status?: string;
-  citations?: Array<{ cardId: string; title: string; kind?: string; quote?: string }>;
+  suggestions?: Array<{ label: string; question: string }>;
   pending?: boolean;
 };
 
-const CHAT_SESSION_KEY = "muni-chat-session-v2";
+const CHAT_SESSION_KEY = "muni-chat-session-v3";
 
 type ChatSession = {
   conversationId?: string;
@@ -47,17 +47,6 @@ function saveChatSession(session: ChatSession) {
   } catch {
     /* ignore quota / private mode */
   }
-}
-
-/** Defensive: never render the same knowledge card twice, even for older rows. */
-function dedupeCitations<T extends { cardId: string }>(citations?: T[]): T[] {
-  if (!citations?.length) return [];
-  const seen = new Set<string>();
-  return citations.filter((citation) => {
-    if (!citation?.cardId || seen.has(citation.cardId)) return false;
-    seen.add(citation.cardId);
-    return true;
-  });
 }
 
 function uid() {
@@ -160,7 +149,6 @@ export function ChatPanel() {
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<"idle" | "listening" | "thinking" | "typing">("idle");
   const [muniState, setMuniState] = useState<MuniState>("wave");
-  const [openCitation, setOpenCitation] = useState<string | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -203,7 +191,6 @@ export function ChatPanel() {
     if (busy) return;
     setConversationId(undefined);
     setMessages([]);
-    setOpenCitation(null);
     setQuestion("");
     setPhase("idle");
     setMuniState("wave");
@@ -211,7 +198,7 @@ export function ChatPanel() {
     inputRef.current?.focus();
   }
 
-  async function ask(raw: string, options?: { focusCardId?: string }) {
+  async function ask(raw: string) {
     const asked = raw.trim();
     if (!asked || busy) return;
 
@@ -221,7 +208,6 @@ export function ChatPanel() {
     setPhase("thinking");
     setMuniState("thinking");
     setQuestion("");
-    setOpenCitation(null);
     setMessages((items) => [
       ...items,
       { id: userId, role: "user", content: asked },
@@ -240,7 +226,6 @@ export function ChatPanel() {
         body: JSON.stringify({
           question: asked,
           conversationId,
-          focusCardId: options?.focusCardId,
         }),
       });
       const payload = await response.json();
@@ -263,7 +248,7 @@ export function ChatPanel() {
                 role: "assistant",
                 content: payload.answer.answer,
                 status: payload.answer.status,
-                citations: payload.citations,
+                suggestions: Array.isArray(payload.suggestions) ? payload.suggestions : [],
                 pending: false,
               }
             : item
@@ -280,6 +265,16 @@ export function ChatPanel() {
                 role: "assistant",
                 content: error instanceof Error ? error.message : "Something went wrong.",
                 status: "refused",
+                suggestions: [
+                  {
+                    label: "College + FEU",
+                    question: "Where does Yuan go to college and what is Yuan studying?",
+                  },
+                  {
+                    label: "Shipped Capstones",
+                    question: "What Capstone projects has Yuan shipped?",
+                  },
+                ],
                 pending: false,
               }
             : item
@@ -372,13 +367,6 @@ export function ChatPanel() {
             </div>
           </div>
 
-          <div className="chat-purpose mt-5">
-            <p className="mono text-[9px] uppercase tracking-[0.14em] text-muni">One job</p>
-            <p className="mt-1 text-sm leading-relaxed text-ink">
-              Answer from Yuan&apos;s verified knowledge. Cite sources. Refuse when evidence is missing.
-            </p>
-          </div>
-
           {messages.length > 0 && (
             <div className="relative z-10 mt-5">
               <div className="mb-2 flex items-center justify-between gap-2">
@@ -410,7 +398,7 @@ export function ChatPanel() {
                 Chat with Muni
               </h1>
               <p className="mt-1 max-w-xl text-sm text-muted">
-                Answers come from verified knowledge cards. Weak grounding means an honest refuse.
+                Answers come from verified knowledge. Weak grounding means an honest refuse.
               </p>
             </div>
             {messages.length > 0 && (
@@ -442,8 +430,8 @@ export function ChatPanel() {
                 </div>
                 <p className="font-display text-sm font-semibold sm:text-base">Start with a verified ask</p>
                 <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-muted sm:text-sm">
-                  Pick a prompt below, or type your own. Grounded asks cite cards. Weak grounding
-                  refuses, and that still leaves a note in Yuan&apos;s owner inbox.
+                  Pick a prompt below, or type your own. Grounded asks stay on verified knowledge.
+                  Weak grounding refuses, and that still leaves a note in Yuan&apos;s owner inbox.
                 </p>
                 <div className="mt-5 w-full max-w-2xl text-left">
                   <div className="mb-2 flex items-center justify-between gap-2 px-0.5">
@@ -512,73 +500,32 @@ export function ChatPanel() {
                     </span>
                   )}
 
-                  {(() => {
-                    const citations = dedupeCitations(message.citations);
-                    if (!citations.length) return null;
-                    return (
-                      <div className="mt-3 space-y-2">
+                  {!message.pending &&
+                    message.role === "assistant" &&
+                    message.suggestions &&
+                    message.suggestions.length > 0 && (
+                      <div className="followup-rail mt-3">
                         <p className="mono text-[9px] uppercase tracking-[0.14em] text-muted">
-                          cited sources · tap to inspect
+                          suggested next asks
                         </p>
-                        <div className="flex flex-wrap gap-2">
-                          {citations.map((citation) => {
-                            const key = `${message.id}:${citation.cardId}`;
-                            const open = openCitation === key;
-                            return (
-                              <button
-                                key={citation.cardId}
-                                type="button"
-                                className={`source-chip ${open ? "is-open" : ""}`}
-                                aria-expanded={open}
-                                onClick={() =>
-                                  setOpenCitation((current) => (current === key ? null : key))
-                                }
-                              >
-                                {citation.kind && (
-                                  <span className="source-chip-kind">{citation.kind}</span>
-                                )}
-                                {citation.title}
-                              </button>
-                            );
-                          })}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {message.suggestions.map((item) => (
+                            <button
+                              key={`${message.id}:${item.question}`}
+                              type="button"
+                              className="followup-chip focus-ring"
+                              disabled={busy}
+                              onClick={() => {
+                                setMuniState("listening");
+                                void ask(item.question);
+                              }}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
                         </div>
-                        <AnimatePresence>
-                          {citations.map((citation) => {
-                            const key = `${message.id}:${citation.cardId}`;
-                            if (openCitation !== key) return null;
-                            return (
-                              <motion.div
-                                key={key}
-                                initial={reduce ? false : { opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={reduce ? undefined : { opacity: 0, height: 0 }}
-                                className="citation-panel"
-                              >
-                                <div className="source-quote is-static !border-l-[rgba(217,119,6,.45)]">
-                                  <LinkifiedText
-                                    text={citation.quote || "No quote stored for this citation."}
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  className="answer-card-cta mt-2"
-                                  disabled={busy}
-                                  onClick={() => {
-                                    setOpenCitation(null);
-                                    void ask(`What does the "${citation.title}" knowledge card cover?`, {
-                                      focusCardId: citation.cardId,
-                                    });
-                                  }}
-                                >
-                                  Ask more about this
-                                </button>
-                              </motion.div>
-                            );
-                          })}
-                        </AnimatePresence>
                       </div>
-                    );
-                  })()}
+                    )}
                 </motion.div>
               ))}
             </AnimatePresence>

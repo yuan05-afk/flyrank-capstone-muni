@@ -20,6 +20,7 @@ import {
   type PriorTurn,
 } from "./memory.service";
 import { retrieveService } from "./retrieve.service";
+import { buildFollowUps } from "./followups.service";
 
 const REFUSAL =
   "I do not have verified knowledge for that. I only speak from Yuan's knowledge cards. Type your question here anyway to leave a note for Yuan's owner inbox, or open the Contact section on the Muni site.";
@@ -151,6 +152,10 @@ export const chatService = {
         conversationId,
         answer: record,
         citations: [],
+        suggestions: buildFollowUps({
+          status: "refused",
+          question: input.question,
+        }),
         retrieved: [],
         provider: provider.id,
       };
@@ -197,6 +202,10 @@ export const chatService = {
         conversationId,
         answer: record,
         citations: [],
+        suggestions: buildFollowUps({
+          status: "open",
+          question: input.question,
+        }),
         retrieved: [],
         provider: provider.id,
       };
@@ -340,6 +349,11 @@ export const chatService = {
       conversationId,
       answer: record,
       citations: verdict.accepted ? finalCitations : [],
+      suggestions: buildFollowUps({
+        status: verdict.status,
+        question: input.question,
+        retrievedTitles: retrieved.candidates.map((item) => item.card.title),
+      }),
       retrieved: retrieved.candidates.map((item) => ({
         id: item.card.id,
         title: item.card.title,
