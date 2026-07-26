@@ -20,7 +20,7 @@ export const STARTER_SUGGESTIONS: StarterSuggestion[] = [
     kind: "grounded",
   },
   {
-    label: "Studies at FEU Tech",
+    label: "College studies",
     question: "Where does Yuan go to college and what is Yuan studying?",
     kind: "grounded",
   },
