@@ -29,16 +29,21 @@ export const knowledgeRepository = {
     sourceId?: string | null;
     tagsJson: string;
   }) {
-    const existing = prisma.knowledgeCard.findFirst({ where: { title: data.title } });
-    return existing.then((row) => {
-      if (row) {
+    return (async () => {
+      const bySource =
+        data.sourceId != null && data.sourceId.length > 0
+          ? await prisma.knowledgeCard.findFirst({ where: { sourceId: data.sourceId } })
+          : null;
+      const existing =
+        bySource ?? (await prisma.knowledgeCard.findFirst({ where: { title: data.title } }));
+      if (existing) {
         return prisma.knowledgeCard.update({
-          where: { id: row.id },
+          where: { id: existing.id },
           data,
         });
       }
       return prisma.knowledgeCard.create({ data });
-    });
+    })();
   },
 };
 

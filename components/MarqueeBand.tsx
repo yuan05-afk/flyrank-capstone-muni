@@ -25,7 +25,7 @@ const FAVICON: Record<CapstoneTone, string> = {
 
 const ROW_A: Token[] = [
   { kind: "capstone", label: "Checkpoint", tone: "checkpoint" },
-  { kind: "word", label: "Cite every claim" },
+  { kind: "word", label: "Suggested next asks" },
   { kind: "status", label: "grounded", tone: "grounded" },
   { kind: "capstone", label: "Lens", tone: "lens" },
   { kind: "word", label: "Think first" },
@@ -45,7 +45,7 @@ const ROW_B: Token[] = [
   { kind: "status", label: "refused", tone: "refused" },
   { kind: "word", label: "Honest refuse" },
   { kind: "capstone", label: "Broadcast", tone: "broadcast" },
-  { kind: "word", label: "Audience openers" },
+  { kind: "word", label: "Code-assist refuse" },
   { kind: "capstone", label: "Checkpoint", tone: "checkpoint" },
 ];
 
@@ -118,7 +118,7 @@ export function MarqueeBand() {
     <div
       className={`muni-marquee ${shouldReduce ? "muni-marquee--static" : ""}`}
       role="img"
-      aria-label="Muni cites verified knowledge, refuses without evidence, and links Yuan's live Capstones: Checkpoint, Lens, Broadcast, and Muni."
+      aria-label="Muni answers from verified knowledge, suggests next asks, refuses without evidence, and links Yuan's live Capstones: Checkpoint, Lens, Broadcast, and Muni."
     >
       <Track tokens={ROW_A} dir="left" />
       <Track tokens={ROW_B} dir="right" />

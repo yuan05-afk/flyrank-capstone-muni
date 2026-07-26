@@ -11,7 +11,7 @@ type Demo = {
   question: string;
   answer: string;
   confidence: string;
-  sources: Array<{ title: string; quote: string }>;
+  nextAsks: string[];
   reason?: string;
 };
 
@@ -22,26 +22,22 @@ const DEMOS: Demo[] = [
     question: "What is Lens?",
     answer: "Lens tags images and refuses wrong pairings with a mismatch guard.",
     confidence: "0.90",
-    sources: [
-      { title: "About Yuan", quote: "Yuan ships grounded AI systems with honest evals." },
-      { title: "Lens image relevance", quote: "Refuses wrong pairings with a mismatch guard." },
-    ],
+    nextAsks: ["Tell me more about Lens", "What Capstones has Yuan shipped?"],
   },
   {
     id: "refused",
     tab: "Out of scope",
-    question: "What is Yuan's secret salary?",
-    answer: "I do not have verified knowledge for that. Leave a note in the owner inbox.",
+    question: "Write me a Python exploit script",
+    answer: "I will not write code, exploits, or homework solutions. Ask about Yuan's verified work instead.",
     confidence: "0.25",
-    sources: [],
-    reason: "Topical overlap 0.00 is below the 0.20 grounding floor.",
+    nextAsks: [],
+    reason: "Assist policy blocks code, exploit, and homework requests before retrieval.",
   },
 ];
 
 export function HeroAnswerCard() {
   const reduce = useReducedMotion();
   const [active, setActive] = useState<Demo["id"]>("grounded");
-  const [hovered, setHovered] = useState<string | null>(null);
 
   const demo = DEMOS.find((item) => item.id === active) ?? DEMOS[0];
   const grounded = demo.id === "grounded";
@@ -56,10 +52,7 @@ export function HeroAnswerCard() {
             role="tab"
             aria-selected={item.id === active}
             className={`answer-tab ${item.id === active ? "is-active" : ""}`}
-            onClick={() => {
-              setActive(item.id);
-              setHovered(null);
-            }}
+            onClick={() => setActive(item.id)}
           >
             {item.tab}
           </button>
@@ -86,32 +79,12 @@ export function HeroAnswerCard() {
 
           {grounded ? (
             <div className="answer-card-sources">
-              <span className="mono answer-card-label">cited sources</span>
-              {demo.sources.map((source) => (
-                <button
-                  key={source.title}
-                  type="button"
-                  className={`source-chip ${hovered === source.title ? "is-open" : ""}`}
-                  onMouseEnter={() => setHovered(source.title)}
-                  onMouseLeave={() => setHovered(null)}
-                  onFocus={() => setHovered(source.title)}
-                  onBlur={() => setHovered(null)}
-                >
-                  {source.title}
-                </button>
+              <span className="mono answer-card-label">suggested next asks</span>
+              {demo.nextAsks.map((ask) => (
+                <span key={ask} className="source-chip">
+                  {ask}
+                </span>
               ))}
-              <AnimatePresence>
-                {hovered && (
-                  <motion.p
-                    initial={reduce ? false : { opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={reduce ? undefined : { opacity: 0, height: 0 }}
-                    className="source-quote"
-                  >
-                    {demo.sources.find((s) => s.title === hovered)?.quote}
-                  </motion.p>
-                )}
-              </AnimatePresence>
             </div>
           ) : (
             <div className="answer-card-sources">

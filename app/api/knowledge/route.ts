@@ -21,3 +21,18 @@ export async function POST(request: NextRequest) {
   });
   return Response.json({ card }, { status: 201 });
 }
+
+/** Upsert by title so fixture syncs can refresh production knowledge without DB URL access. */
+export async function PUT(request: NextRequest) {
+  const denied = requireDemoAuth(request);
+  if (denied) return denied;
+  const body = knowledgeCardSchema.parse(await request.json());
+  const card = await knowledgeRepository.upsertByTitle({
+    kind: body.kind,
+    title: body.title,
+    body: body.body,
+    sourceId: body.sourceId ?? null,
+    tagsJson: JSON.stringify(body.tags),
+  });
+  return Response.json({ card });
+}

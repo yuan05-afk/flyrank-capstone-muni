@@ -74,6 +74,39 @@ export function isOutOfDomainFantasyQuestion(question: string): boolean {
   );
 }
 
+/**
+ * Muni is a grounded persona agent, not a free coding assistant.
+ * Requests that burn tokens on generated code, exploits, or homework solutions
+ * must refuse before retrieval can latch onto catalog FAQ cards.
+ */
+export function isCodeOrExploitAssistQuestion(question: string): boolean {
+  const cleaned = question.toLowerCase().replace(/\s+/g, " ").trim();
+  return (
+    /\b(write|create|generate|build|make|give me|implement)\b.{0,40}\b(code|script|program|function|class|exploit|poc|payload|malware|virus)\b/.test(
+      cleaned
+    ) ||
+    /\b(python|javascript|typescript|java|c\+\+|golang|rust)\b.{0,30}\b(code|script|program|function)\b/.test(
+      cleaned
+    ) ||
+    /\b(solve|do)\b.{0,20}\b(my )?(homework|assignment|exam)\b/.test(cleaned) ||
+    /\b(jailbreak|ignore (your|the) (rules|system|instructions)|bypass (the )?guard)\b/.test(
+      cleaned
+    )
+  );
+}
+
+/** Meta topic-list FAQs. Useful for help asks, noisy for specific questions. */
+export function isCatalogMetaCard(card: { title: string; body: string }): boolean {
+  return /what can someone ask|what should recruiters ask|what can i ask/i.test(card.title) ||
+    /you can ask about yuan|recruiters can ask about yuan/i.test(card.body);
+}
+
+export function wantsCatalogHelp(question: string): boolean {
+  return /\b(what can i ask|what should i ask|topics|help|capabilities|what can someone ask|recruiter|recruiters|interview)\b/i.test(
+    question
+  );
+}
+
 const STOP = new Set([
   "a", "an", "the", "and", "or", "of", "to", "for", "in", "on", "is", "are",
   "was", "what", "who", "how", "does", "did", "about", "with", "from",

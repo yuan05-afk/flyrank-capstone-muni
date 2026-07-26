@@ -14,6 +14,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "worker:tick": "tsx scripts/tick-worker.ts",
     "knowledge:embed": "tsx scripts/embed-knowledge.ts",
+    "knowledge:upsert": "tsx scripts/upsert-persona-cards.ts",
+    "knowledge:sync": "tsx scripts/sync-persona-http.ts",
     "eval": "tsx scripts/run-eval.ts",
     "eval:sweep": "tsx scripts/threshold-sweep.ts",
     "shots": "node scripts/capture-readme-shots.mjs",

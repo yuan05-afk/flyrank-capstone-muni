@@ -54,6 +54,7 @@ export function buildFollowUps(input: {
     const clean = title.trim();
     if (!clean) continue;
     if (/refuse|salary|privacy/i.test(clean)) continue;
+    if (/what can someone ask|what should recruiters ask/i.test(clean)) continue;
     if (/full name|identity/i.test(clean)) {
       push("Who is Yuan?", "Who is Yuan and what does Yuan build?");
       continue;

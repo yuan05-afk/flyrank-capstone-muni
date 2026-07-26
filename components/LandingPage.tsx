@@ -24,13 +24,13 @@ const features = [
   },
   {
     Icon: MotifCite,
-    title: "Cited answers",
-    copy: "Every grounded reply maps claims back to retrieved cards with source chips.",
+    title: "Suggested next asks",
+    copy: "Grounded replies stay short, then offer related verified follow-ups instead of dumping a topic catalog.",
   },
   {
     Icon: MotifGuard,
     title: "Grounding Guard",
-    copy: "Weak similarity, missing citations, or low confidence triggers an honest refusal.",
+    copy: "Weak similarity, missing evidence, or low confidence triggers an honest refusal.",
   },
 ];
 
@@ -156,7 +156,7 @@ export function LandingPage({ knowledgeCount }: { knowledgeCount: number }) {
             transition={{ ...spring, delay: 0.16 }}
             className="hero-lead mx-auto mt-5 max-w-xl text-muted"
           >
-            Muni comes from Filipino &quot;muni-muni,&quot; thoughtful reflection. It retrieves Yuan&apos;s knowledge cards, cites every claim, and refuses when evidence is missing.
+            Muni comes from Filipino &quot;muni-muni,&quot; thoughtful reflection. It retrieves Yuan&apos;s knowledge cards, answers only what those cards support, and refuses when evidence is missing.
           </motion.p>
           <motion.div
             initial={enter}
@@ -182,7 +182,7 @@ export function LandingPage({ knowledgeCount }: { knowledgeCount: number }) {
             <span className="text-muted">
               <MotifArrow className="h-3.5 w-3.5" />
             </span>
-            <span className="match-token good">cited · grounded</span>
+            <span className="match-token good">grounded</span>
             <span className="match-token bad">salary? refused</span>
           </motion.div>
         </div>
@@ -274,17 +274,17 @@ export function LandingPage({ knowledgeCount }: { knowledgeCount: number }) {
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <span className="mono text-[10px] uppercase tracking-widest text-muted">in scope</span>
-                <h3 className="font-display text-xl font-semibold sm:text-2xl">Cited answer</h3>
+                <h3 className="font-display text-xl font-semibold sm:text-2xl">Grounded answer</h3>
               </div>
               <span className="badge badge-ok">grounded</span>
             </div>
             <MuniMascot state="answering" className="mx-auto h-28 w-28" />
             <p className="mt-4 text-sm text-muted">
-              Suggested: Lens tags images and refuses wrong pairings with a mismatch guard.
+              Lens tags images and refuses wrong pairings with a mismatch guard.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="tag-chip">Lens image relevance</span>
-              <span className="badge badge-ok">cited</span>
+              <span className="tag-chip">Tell me more about Lens</span>
+              <span className="badge badge-ok">next ask</span>
             </div>
           </motion.article>
           <motion.article
@@ -350,9 +350,9 @@ export function LandingPage({ knowledgeCount }: { knowledgeCount: number }) {
           transition={{ duration: 0.5, ease: EASE }}
         >
           <BrandMark className="h-12 w-12" />
-          <h2 className="!mb-2">Put every claim in focus.</h2>
+          <h2 className="!mb-2">Ask once. Stay grounded.</h2>
           <p className="max-w-xl text-muted">
-            Ask about Lens, refuse a fantasy question, then open the owner inbox to see grounded vs guarded and knowledge gaps.
+            Ask about Lens, try a code-assist refuse, then open the owner inbox to see grounded vs guarded and knowledge gaps.
           </p>
           <Link href="/chat" className="btn-primary mt-6">
             Open Muni <MotifArrow />

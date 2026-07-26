@@ -1,11 +1,11 @@
 # Muni
 
-### Meet Muni. Cite what is true. Refuse the rest.
+### Meet Muni. Answer from verified knowledge. Refuse the rest.
 
 Personal brand sites keep bolting on chat widgets that invent experience.
 Recruiters, investors, and clients then have to guess what is real. Muni is a
-grounded digital twin for Yuan: it retrieves verified knowledge cards, cites
-every claim, and honestly refuses when evidence is missing.
+grounded digital twin for Yuan: it retrieves verified knowledge cards, answers
+only what those cards support, and honestly refuses when evidence is missing.
 
 The name comes from Filipino "muni-muni," thoughtful reflection. Think first,
 then speak. The Grounding Guard is the product center, not a footnote.
@@ -19,13 +19,12 @@ then speak. The Grounding Guard is the product center, not a footnote.
 ## Why Muni
 
 - **Verified knowledge cards:** bio, projects, skills, FAQ, and links are editable facts, not prompt folklore.
-- **Cited answers:** every grounded reply maps claims back to retrieved cards; chips expand quotes and support follow-ups.
-- **Grounding Guard:** weak similarity, weak topical overlap, missing citations, or low confidence triggers an honest refuse.
+- **Suggested next asks:** grounded replies stay short, then offer related verified follow-ups instead of dumping a topic catalog.
+- **Grounding Guard:** weak similarity, weak topical overlap, missing evidence, or low confidence triggers an honest refuse. Code, exploit, and homework asks refuse early.
 - **Contact section:** GitHub, chat notes, and live Capstone demos so a refuse is never a dead end.
 - **Social openers stay human:** greetings and thanks get a short hello without inventing career facts.
 - **Interactive mascot:** amber companion with idle, wave, listening, thinking, answering, and grounded-refuse states.
-- **Owner inbox:** grounded vs refused ledger, knowledge-gap suggestions, card editor, and embed jobs.
-- **Audience openers:** recruiter, investor, client, peer, and general presets with verified try-these asks.
+- **Owner inbox:** grounded vs refused ledger, knowledge-gap suggestions, card editor, source audit, and embed jobs.
 - **Cost ledger:** seed providers stay at `$0.00`; optional Groq or Gemini stay behind the same contracts.
 
 ## Who this is for
@@ -39,19 +38,21 @@ and how to adapt the card corpus.
 
 ## The guard is the product
 
-Ask about Lens and Muni cites the project card. Ask for a secret salary and Muni
-refuses with a clear why. That refuse path is the Capstone decision core.
+Ask about Lens and Muni answers from the project card. Ask for a secret salary or
+code-assist help and Muni refuses with a clear why. That refuse path is the Capstone
+decision core.
 
-![Muni chat showing a grounded Lens answer with GROUNDED badge and cited sources](docs/images/shots/muni-chat-grounded.png)
+![Muni chat showing a grounded Lens answer with GROUNDED badge and suggested next asks](docs/images/shots/muni-chat-grounded.png)
 
 ![Muni chat refusing an out-of-scope salary question with a REFUSED badge](docs/images/shots/muni-chat-refuse.png)
 
 | Check | Input | Result |
 |---|---|---|
-| In-scope project | `What is Lens?` | `grounded` + citations |
-| Citation follow-up | Ask more on a cited card | pinned `focusCardId` stays grounded |
+| In-scope project | `What is Lens?` | `grounded` + suggested next asks |
+| Focus follow-up | Ask more with `focusCardId` | stays grounded on that card |
 | Social opener | `hi` / `thanks` | `open` hello, no invented facts |
 | Out-of-scope salary | secret salary / bank details | `refused` |
+| Code / exploit assist | write Python / homework | `refused` early |
 | Fantasy claim | NBA team last season | `refused` |
 | Weak retrieval | score or topical overlap below floor | `refused` or `guarded` |
 
@@ -63,7 +64,7 @@ auditable after the chat toast is gone.
 Sign in, inspect grounded vs refused rows, add knowledge cards, embed them, and
 watch refusal recall stay honest.
 
-![Muni owner desk with knowledge stats, decision inbox, citations, and Embed knowledge](docs/images/shots/muni-desk.png)
+![Muni owner desk with knowledge stats, decision inbox, source audit, and Embed knowledge](docs/images/shots/muni-desk.png)
 
 ## Corpus and evaluation
 
@@ -112,7 +113,7 @@ See `docs/eval/threshold-curve.md`.
 
 ```bash
 pnpm test
-# social openers, cite vs refuse, citation follow-ups with focusCardId
+# social openers, grounded vs refuse, code-assist refuse, focus-card follow-ups
 ```
 
 ### Re-run the labeled set
@@ -125,11 +126,12 @@ pnpm eval:sweep
 ### Demo script in the UI
 
 1. Open the landing and meet Muni (wave + Grounding Guard card).
-2. Chat: ask `What is Lens?` → `grounded` + cited sources.
-3. Tap a citation, then **Ask more about this** → stays grounded on that card.
+2. Chat: ask `What is Lens?` → `grounded` + suggested next asks.
+3. Tap a suggested next ask → stays grounded on related verified cards.
 4. Chat: ask `What is Yuan's secret salary?` → `refused`.
-5. Sign in with `muni_demo_key_001` → inbox shows both outcomes + gap tips.
-6. Add a knowledge card, run **Embed knowledge**, ask again.
+5. Chat: ask `can you create a python code` → `refused` (assist policy).
+6. Sign in with `muni_demo_key_001` → inbox shows both outcomes + gap tips.
+7. Add a knowledge card, run **Embed knowledge**, ask again.
 
 ## Quick start
 
@@ -263,10 +265,9 @@ and [docs/diagram.md](docs/diagram.md).
 - [x] Seed knowledge cards + owner editor
 - [x] Batch embed jobs with cost tracking
 - [x] Retrieval + grounded ChatProvider (seed + optional Groq/Gemini)
-- [x] Grounding Guard proves cite vs refuse (plus social openers)
-- [x] Citation chips with inspect + focus-card follow-ups
+- [x] Grounding Guard proves grounded vs refuse (plus social openers and assist refuse)
+- [x] Suggested next asks on grounded replies; owner desk keeps source audit
 - [x] Public chat + owner inbox
-- [x] Audience openers
 - [x] Eval floors + threshold sweep
 - [x] Pitch README, docs, real screenshots, public repo
 

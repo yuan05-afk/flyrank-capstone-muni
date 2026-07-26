@@ -10,10 +10,13 @@ import {
 } from "@/repositories";
 import {
   guardGrounding,
+  isCatalogMetaCard,
+  isCodeOrExploitAssistQuestion,
   isOutOfDomainFantasyQuestion,
   isSensitivePrivateQuestion,
   isSocialOpener,
   topicalOverlap,
+  wantsCatalogHelp,
 } from "./guard.service";
 import {
   expandRetrievalQuery,
@@ -27,6 +30,64 @@ const REFUSAL =
   "I do not have verified knowledge for that. I only speak from Yuan's knowledge cards. Type your question here anyway to leave a note for Yuan's owner inbox, or open the Contact section on the Muni site.";
 const PRIVACY_REFUSAL =
   "I cannot share private or excluded personal information. I only answer from Yuan's verified knowledge, such as college education, skills, organizations, and shipped work. You can still leave this note for Yuan in the owner inbox.";
+const ASSIST_REFUSAL =
+  "I cannot write code, scripts, exploits, or homework solutions. I am Yuan's grounded personal agent, so I only answer from verified knowledge about Yuan's work and background. Ask about Capstones, skills, or leave a note in chat.";
+
+async function refuseEarly(input: {
+  conversationId: string;
+  question: string;
+  answer: string;
+  reason: string;
+  flag: string;
+}) {
+  const provider = chatProvider();
+  const record = await answersRepository.create({
+    conversationId: input.conversationId,
+    question: input.question,
+    answer: input.answer,
+    citationsJson: "[]",
+    grounded: false,
+    status: "refused",
+    guardReason: input.reason,
+    confidence: 1,
+    policyId: GROUNDING_POLICY_ID,
+    featuresJson: JSON.stringify({
+      bestScore: 0,
+      confidence: 1,
+      citationCount: 0,
+      retrievedCount: 0,
+      topicalOverlap: 0,
+      belowSimilarityFloor: false,
+      belowConfidenceFloor: false,
+      belowTopicalFloor: false,
+      citationsValid: true,
+      [input.flag]: true,
+    }),
+  });
+  await Promise.all([
+    conversationRepository.addMessage(input.conversationId, "assistant", input.answer),
+    costsRepository.create({
+      kind: "chat",
+      model: provider.id,
+      units: 0,
+      unitCostUsd: 0,
+      totalUsd: 0,
+      refType: "answer",
+      refId: record.id,
+    }),
+  ]);
+  return {
+    conversationId: input.conversationId,
+    answer: record,
+    citations: [],
+    suggestions: buildFollowUps({
+      status: "refused",
+      question: input.question,
+    }),
+    retrieved: [],
+    provider: provider.id,
+  };
+}
 
 function socialReply() {
   return `Hi. I am Muni. ${CHAT_OPENER}`;
@@ -112,104 +173,34 @@ export const chatService = {
 
     await conversationRepository.addMessage(conversationId, "user", input.question);
 
+    if (isCodeOrExploitAssistQuestion(input.question)) {
+      return refuseEarly({
+        conversationId,
+        question: input.question,
+        answer: ASSIST_REFUSAL,
+        reason: "Deterministic assist policy blocked a code, exploit, or homework request.",
+        flag: "assistBlocked",
+      });
+    }
+
     if (isOutOfDomainFantasyQuestion(input.question)) {
-      const provider = chatProvider();
-      const record = await answersRepository.create({
+      return refuseEarly({
         conversationId,
         question: input.question,
         answer: REFUSAL,
-        citationsJson: "[]",
-        grounded: false,
-        status: "refused",
-        guardReason: "Deterministic out-of-domain fantasy policy blocked an unsupported claim.",
-        confidence: 1,
-        policyId: GROUNDING_POLICY_ID,
-        featuresJson: JSON.stringify({
-          bestScore: 0,
-          confidence: 1,
-          citationCount: 0,
-          retrievedCount: 0,
-          topicalOverlap: 0,
-          belowSimilarityFloor: false,
-          belowConfidenceFloor: false,
-          belowTopicalFloor: false,
-          citationsValid: true,
-          fantasyBlocked: true,
-        }),
+        reason: "Deterministic out-of-domain fantasy policy blocked an unsupported claim.",
+        flag: "fantasyBlocked",
       });
-      await Promise.all([
-        conversationRepository.addMessage(conversationId, "assistant", REFUSAL),
-        costsRepository.create({
-          kind: "chat",
-          model: provider.id,
-          units: 0,
-          unitCostUsd: 0,
-          totalUsd: 0,
-          refType: "answer",
-          refId: record.id,
-        }),
-      ]);
-      return {
-        conversationId,
-        answer: record,
-        citations: [],
-        suggestions: buildFollowUps({
-          status: "refused",
-          question: input.question,
-        }),
-        retrieved: [],
-        provider: provider.id,
-      };
     }
 
     if (isSensitivePrivateQuestion(input.question)) {
-      const provider = chatProvider();
-      const record = await answersRepository.create({
+      return refuseEarly({
         conversationId,
         question: input.question,
         answer: PRIVACY_REFUSAL,
-        citationsJson: "[]",
-        grounded: false,
-        status: "refused",
-        guardReason: "Deterministic privacy policy blocked a sensitive or excluded-data request.",
-        confidence: 1,
-        policyId: GROUNDING_POLICY_ID,
-        featuresJson: JSON.stringify({
-          bestScore: 0,
-          confidence: 1,
-          citationCount: 0,
-          retrievedCount: 0,
-          topicalOverlap: 0,
-          belowSimilarityFloor: false,
-          belowConfidenceFloor: false,
-          belowTopicalFloor: false,
-          citationsValid: true,
-          privacyBlocked: true,
-        }),
+        reason: "Deterministic privacy policy blocked a sensitive or excluded-data request.",
+        flag: "privacyBlocked",
       });
-      await Promise.all([
-        conversationRepository.addMessage(conversationId, "assistant", PRIVACY_REFUSAL),
-        costsRepository.create({
-          kind: "chat",
-          model: provider.id,
-          units: 0,
-          unitCostUsd: 0,
-          totalUsd: 0,
-          refType: "answer",
-          refId: record.id,
-        }),
-      ]);
-      return {
-        conversationId,
-        answer: record,
-        citations: [],
-        suggestions: buildFollowUps({
-          status: "refused",
-          question: input.question,
-        }),
-        retrieved: [],
-        provider: provider.id,
-      };
     }
 
     if (isSocialOpener(input.question)) {
@@ -267,7 +258,8 @@ export const chatService = {
       GUARD_CONFIG.topK,
       focusCardId
     );
-    const cards = retrieved.candidates
+    const catalogHelp = wantsCatalogHelp(input.question);
+    let cards = retrieved.candidates
       .map((item) => ({
         id: item.card.id,
         title: item.card.title,
@@ -313,10 +305,21 @@ export const chatService = {
           ) {
             points -= 3;
           }
+          if (isCatalogMetaCard(card) && !catalogHelp) {
+            points -= 8;
+          }
           return points;
         };
         return score(b) - score(a);
       });
+
+    // Topic-catalog FAQs are for help asks only. Feeding both into the model
+    // produces long, repetitive laundry-list answers.
+    if (!catalogHelp) {
+      const focused = cards.filter((card) => !isCatalogMetaCard(card));
+      if (focused.length) cards = focused;
+    }
+    cards = cards.slice(0, catalogHelp ? 2 : 3);
     const corpus = retrieved.allCards
       .map((card) => `${card.title} ${card.body}`)
       .join("\n");
@@ -447,12 +450,12 @@ export const chatService = {
       suggestions: buildFollowUps({
         status: verdict.status,
         question: input.question,
-        retrievedTitles: retrieved.candidates.map((item) => item.card.title),
+        retrievedTitles: cards.map((card) => card.title),
       }),
-      retrieved: retrieved.candidates.map((item) => ({
-        id: item.card.id,
-        title: item.card.title,
-        score: item.score,
+      retrieved: cards.map((card, index) => ({
+        id: card.id,
+        title: card.title,
+        score: retrieved.candidates.find((item) => item.card.id === card.id)?.score ?? 1 - index * 0.01,
       })),
       provider: providerId,
     };

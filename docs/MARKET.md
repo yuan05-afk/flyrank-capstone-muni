@@ -7,9 +7,9 @@ without inventing facts.
 
 | Buyer | Pain | What Muni changes |
 |---|---|---|
-| Job seekers / interns | Portfolio chatbots invent experience | Cited answers from verified cards only |
+| Job seekers / interns | Portfolio chatbots invent experience | Grounded answers from verified cards only |
 | Founders | Investor FAQs drift into hype | Honest refuse when knowledge is missing |
-| Freelancers | Client intake repeats the same answers | Audience openers + grounded replies |
+| Freelancers | Client intake repeats the same answers | Suggested next asks + grounded replies |
 | Teams shipping agents | Hallucination risk kills demos | Guard policy + eval floors + owner inbox |
 
 ## Why this is market relevant

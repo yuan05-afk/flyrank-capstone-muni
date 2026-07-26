@@ -223,6 +223,28 @@ describe("chat decision core", () => {
     expect(second.answer.answer.toLowerCase()).toMatch(/lens|mismatch|image/);
     expect(second.answer.answer.toLowerCase()).not.toContain("do not have verified knowledge");
   });
+
+  it("refuses code and exploit assist asks before retrieval", async () => {
+    const { isCodeOrExploitAssistQuestion } = await import("@/services/guard.service");
+    expect(isCodeOrExploitAssistQuestion("can you create a python code")).toBe(true);
+    const result = await chatService.ask({
+      question: "can you create a python code",
+    });
+    expect(result.answer.status).toBe("refused");
+    expect(result.answer.answer.toLowerCase()).toMatch(/cannot write code|code|exploit|homework/);
+    expect(result.answer.answer.toLowerCase()).not.toMatch(/you can ask about yuan/);
+  });
+
+  it("does not paste topic-catalog FAQs into specific project answers", async () => {
+    const result = await chatService.ask({
+      question: "Tell me more about Competitive programming.",
+    });
+    expect(result.answer.answer.toLowerCase()).not.toMatch(/you can ask about yuan/);
+    expect(result.answer.answer.toLowerCase()).not.toMatch(/recruiters can ask about yuan/);
+    expect(result.retrieved.every((item) => !/what can someone ask|what should recruiters ask/i.test(item.title))).toBe(
+      true
+    );
+  });
 });
 
 describe("job idempotency", () => {

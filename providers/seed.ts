@@ -78,6 +78,12 @@ function cardRelevance(
       /\b(capstone|project|shipped|checkmydevice|shopscript)\b/i.test(question)) {
     score -= 0.4;
   }
+  if (
+    /what can someone ask|what should recruiters ask/i.test(card.title) &&
+    !/\b(what can i ask|topics|help|recruiter|recruiters|interview)\b/i.test(question)
+  ) {
+    score -= 0.55;
+  }
   return score;
 }
 
@@ -156,7 +162,18 @@ export class SeedChatProvider implements ChatProvider {
       (a, b) => cardRelevance(input.question, b) - cardRelevance(input.question, a)
     );
     const primary = ranked[0];
-    const support = ranked.slice(0, input.followUp ? 3 : 2);
+    // Never glue a second topic-catalog FAQ onto a specific answer.
+    const support = ranked
+      .slice(0, input.followUp ? 3 : 2)
+      .filter((card, index) => {
+        if (index === 0) return true;
+        if (/what can someone ask|what should recruiters ask/i.test(card.title)) return false;
+        if (/what can someone ask|what should recruiters ask/i.test(primary.title)) {
+          return !/what can someone ask|what should recruiters ask/i.test(card.title);
+        }
+        return true;
+      })
+      .slice(0, input.followUp ? 2 : 1);
 
     const sentenceBudget = input.followUp ? 3 : 2;
     // Keep URLs inside the chosen sentences so contact/GitHub lines stay grammatical.
