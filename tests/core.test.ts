@@ -87,7 +87,6 @@ describe("chat decision core", () => {
     if (!cards.length) throw new Error("seed cards missing; run pnpm db:seed");
     const result = await chatService.ask({
       question: "What is Lens and what does its mismatch guard do?",
-      audience: "recruiter",
     });
     expect(result.answer.status).toBe("grounded");
     expect(result.citations.length).toBeGreaterThan(0);
@@ -97,7 +96,6 @@ describe("chat decision core", () => {
   it("refuses out-of-scope salary questions", async () => {
     const result = await chatService.ask({
       question: "What is Yuan's secret salary and bank account number?",
-      audience: "general",
     });
     expect(result.answer.status).not.toBe("grounded");
     expect(result.answer.answer.toLowerCase()).toContain("verified knowledge");
@@ -107,7 +105,6 @@ describe("chat decision core", () => {
     expect(isSocialOpener("Hi")).toBe(true);
     const result = await chatService.ask({
       question: "Hi",
-      audience: "general",
     });
     expect(result.answer.status).toBe("open");
     expect(result.answer.answer.toLowerCase()).toContain("muni");
@@ -120,7 +117,6 @@ describe("chat decision core", () => {
     if (!muni) throw new Error("muni card missing");
     const result = await chatService.ask({
       question: `What does the "${muni.title}" knowledge card cover?`,
-      audience: "recruiter",
       focusCardId: muni.id,
     });
     expect(result.answer.status).toBe("grounded");
@@ -130,7 +126,6 @@ describe("chat decision core", () => {
   it("grounds identity questions like who is yuan", async () => {
     const result = await chatService.ask({
       question: "who is yuan",
-      audience: "general",
     });
     expect(result.answer.status).toBe("grounded");
     expect(result.answer.answer.toLowerCase()).toMatch(/yuan|flyrank|capstone/);
@@ -140,12 +135,10 @@ describe("chat decision core", () => {
   it("keeps conversation memory for expound follow-ups", async () => {
     const first = await chatService.ask({
       question: "What is Lens and what does its mismatch guard do?",
-      audience: "general",
     });
     expect(first.answer.status).toBe("grounded");
     const second = await chatService.ask({
       question: "can you expound more",
-      audience: "general",
       conversationId: first.conversationId,
     });
     expect(second.answer.status).toBe("grounded");

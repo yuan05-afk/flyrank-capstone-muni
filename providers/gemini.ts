@@ -17,7 +17,6 @@ export class GeminiChatProvider implements ChatProvider {
   async answer(input: {
     question: string;
     cards: Array<{ id: string; title: string; body: string; kind: string }>;
-    audience?: string;
     history?: Array<{ role: "user" | "assistant"; content: string }>;
     followUp?: boolean;
   }): Promise<GroundedAnswer> {
@@ -44,7 +43,6 @@ export class GeminiChatProvider implements ChatProvider {
     const prompt = `You are Muni, a grounded personal AI. Answer ONLY using the knowledge cards.
 Return JSON with keys: answer (string), citations (array of {cardId, title, quote?}), confidence (0..1), grounded (boolean).
 If the cards do not support an answer, set grounded=false, confidence low, citations=[], and refuse honestly.
-Audience: ${input.audience || "general"}
 Question: ${input.question}
 Cards:
 ${context}`;

@@ -1,6 +1,6 @@
-import { AUDIENCE_OPENERS, type Audience } from "@/config/audience.config";
 import { PRICING } from "@/config/pricing.config";
 import { GUARD_CONFIG, GROUNDING_POLICY_ID } from "@/config/guard.config";
+import { CHAT_OPENER } from "@/config/starters.config";
 import { chatProvider } from "@/providers/registry";
 import { SeedChatProvider } from "@/providers/seed";
 import {
@@ -26,10 +26,8 @@ const REFUSAL =
 const PRIVACY_REFUSAL =
   "I cannot share private or excluded personal information. I only answer from Yuan's verified knowledge, such as college education, skills, organizations, and shipped work. You can still leave this note for Yuan in the owner inbox.";
 
-function socialReply(audience?: string) {
-  const key = (audience || "general") as Audience;
-  const opener = AUDIENCE_OPENERS[key] ?? AUDIENCE_OPENERS.general;
-  return `Hi. I am Muni. ${opener.opener} I only answer from verified knowledge cards, so ask about Yuan's college at FEU, Capstones, stack, skills, organizations, or how to get in touch via GitHub or a chat note.`;
+function socialReply() {
+  return `Hi. I am Muni. ${CHAT_OPENER}`;
 }
 
 function parseCitations(raw: string | null | undefined) {
@@ -78,13 +76,12 @@ function normalizeCitations(
 export const chatService = {
   async ask(input: {
     question: string;
-    audience?: string;
     conversationId?: string;
     focusCardId?: string;
   }) {
     let conversationId = input.conversationId;
     if (!conversationId) {
-      const conversation = await conversationRepository.create(input.audience || "general");
+      const conversation = await conversationRepository.create("general");
       conversationId = conversation.id;
     }
 
@@ -161,7 +158,7 @@ export const chatService = {
 
     if (isSocialOpener(input.question)) {
       const provider = chatProvider();
-      const answer = socialReply(input.audience);
+      const answer = socialReply();
       const record = await answersRepository.create({
         conversationId,
         question: input.question,
@@ -232,7 +229,6 @@ export const chatService = {
       draft = await provider.answer({
         question: input.question,
         cards,
-        audience: input.audience,
         history,
         followUp: memory.isFollowUp,
       });
@@ -243,7 +239,6 @@ export const chatService = {
       draft = await fallback.answer({
         question: input.question,
         cards,
-        audience: input.audience,
         history,
         followUp: memory.isFollowUp,
       });

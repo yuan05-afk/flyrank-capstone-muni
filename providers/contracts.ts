@@ -7,7 +7,6 @@ export interface ChatProvider {
   answer(input: {
     question: string;
     cards: Array<{ id: string; title: string; body: string; kind: string }>;
-    audience?: string;
     history?: ChatHistoryTurn[];
     followUp?: boolean;
   }): Promise<GroundedAnswer>;

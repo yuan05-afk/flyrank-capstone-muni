@@ -1,9 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { AUDIENCE_OPENERS, type Audience, type AudienceSuggestion } from "@/config/audience.config";
-import { AudienceSelect } from "@/components/AudienceSelect";
+import {
+  CHAT_OPENER,
+  CHAT_STARTER,
+  STARTER_SUGGESTIONS,
+  type StarterSuggestion,
+} from "@/config/starters.config";
 import { ContactSection } from "@/components/ContactSection";
 import { MuniMascot, type MuniState } from "@/components/MuniMascot";
 import { MotifReflect, MotifSend } from "@/components/Motifs";
@@ -18,11 +22,10 @@ type ChatMessage = {
   pending?: boolean;
 };
 
-const CHAT_SESSION_KEY = "muni-chat-session-v1";
+const CHAT_SESSION_KEY = "muni-chat-session-v2";
 
 type ChatSession = {
   conversationId?: string;
-  audience?: Audience;
   messages?: ChatMessage[];
 };
 
@@ -103,24 +106,22 @@ function TypingDots() {
 
 function SuggestionList({
   suggestions,
-  audience,
   busy,
   reduce,
   onPick,
   layout = "rail",
 }: {
-  suggestions: AudienceSuggestion[];
-  audience: Audience;
+  suggestions: StarterSuggestion[];
   busy: boolean;
   reduce: boolean | null;
-  onPick: (item: AudienceSuggestion) => void;
+  onPick: (item: StarterSuggestion) => void;
   layout?: "rail" | "stage";
 }) {
   return (
     <div className={layout === "stage" ? "suggestion-stage-grid" : "space-y-2"}>
       {suggestions.map((item, index) => (
         <motion.button
-          key={`${audience}-${item.question}`}
+          key={item.question}
           type="button"
           initial={reduce ? false : { opacity: 0, y: layout === "stage" ? 10 : 0, x: layout === "rail" ? -8 : 0 }}
           animate={{ opacity: 1, y: 0, x: 0 }}
@@ -153,7 +154,6 @@ function SuggestionList({
 export function ChatPanel() {
   const reduce = useReducedMotion();
   const [booting, setBooting] = useState(true);
-  const [audience, setAudience] = useState<Audience>("general");
   const [question, setQuestion] = useState("");
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -165,14 +165,12 @@ export function ChatPanel() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const opener = useMemo(() => AUDIENCE_OPENERS[audience], [audience]);
+  const emptySuggestions = STARTER_SUGGESTIONS.slice(0, 3);
+  const railSuggestions = STARTER_SUGGESTIONS;
 
   useEffect(() => {
     const saved = loadChatSession();
     if (saved) {
-      if (saved.audience && saved.audience in AUDIENCE_OPENERS) {
-        setAudience(saved.audience);
-      }
       if (saved.conversationId) setConversationId(saved.conversationId);
       if (Array.isArray(saved.messages) && saved.messages.length > 0) {
         setMessages(saved.messages.filter((message) => !message.pending));
@@ -191,10 +189,9 @@ export function ChatPanel() {
     if (!sessionReady) return;
     saveChatSession({
       conversationId,
-      audience,
       messages: messages.filter((message) => !message.pending),
     });
-  }, [conversationId, audience, messages, sessionReady]);
+  }, [conversationId, messages, sessionReady]);
 
   useEffect(() => {
     const node = scrollerRef.current;
@@ -218,13 +215,13 @@ export function ChatPanel() {
     const asked = raw.trim();
     if (!asked || busy) return;
 
-    setBusy(true);
-    setPhase("listening");
-    setMuniState("listening");
-    setQuestion("");
-
     const userId = uid();
     const pendingId = uid();
+    setBusy(true);
+    setPhase("thinking");
+    setMuniState("thinking");
+    setQuestion("");
+    setOpenCitation(null);
     setMessages((items) => [
       ...items,
       { id: userId, role: "user", content: asked },
@@ -233,13 +230,8 @@ export function ChatPanel() {
         role: "assistant",
         content: "Muni is thinking through verified cards...",
         pending: true,
-        status: "thinking",
       },
     ]);
-
-    await new Promise((resolve) => window.setTimeout(resolve, reduce ? 80 : 280));
-    setPhase("thinking");
-    setMuniState("thinking");
 
     try {
       const response = await fetch("/api/chat", {
@@ -247,53 +239,38 @@ export function ChatPanel() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: asked,
-          audience,
           conversationId,
           focusCardId: options?.focusCardId,
         }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Chat failed");
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Chat failed");
 
+      setConversationId(payload.conversationId);
       setPhase("typing");
-      setMuniState("answering");
-      setMessages((items) =>
-        items.map((item) =>
-          item.id === pendingId
-            ? {
-                ...item,
-                content: "Muni is drafting a grounded reply...",
-                status: "typing",
-              }
-            : item
-        )
+      setMuniState(
+        payload.answer.status === "grounded"
+          ? "answering"
+          : payload.answer.status === "open"
+            ? "wave"
+            : "grounded-refuse"
       );
-      await new Promise((resolve) => window.setTimeout(resolve, reduce ? 60 : 420));
-
-      setConversationId(data.conversationId);
-      const status = data.answer.status as string;
       setMessages((items) =>
         items.map((item) =>
           item.id === pendingId
             ? {
                 id: pendingId,
                 role: "assistant",
-                content: data.answer.answer,
-                status,
-                citations: data.citations,
+                content: payload.answer.answer,
+                status: payload.answer.status,
+                citations: payload.citations,
                 pending: false,
               }
             : item
         )
       );
-      setMuniState(
-        status === "grounded" || status === "open"
-          ? status === "open"
-            ? "wave"
-            : "answering"
-          : "grounded-refuse"
-      );
       setPhase("idle");
+      if (payload.answer.status === "grounded") setMuniState("idle");
     } catch (error) {
       setMessages((items) =>
         items.map((item) =>
@@ -321,14 +298,7 @@ export function ChatPanel() {
     void ask(question);
   }
 
-  function onAudienceChange(next: Audience) {
-    setAudience(next);
-    setMuniState("wave");
-    setPhase("idle");
-    if (!busy) setQuestion(AUDIENCE_OPENERS[next].starter);
-  }
-
-  function onSuggestion(item: AudienceSuggestion) {
+  function onSuggestion(item: StarterSuggestion) {
     if (busy) return;
     setMuniState("listening");
     void ask(item.question);
@@ -358,7 +328,6 @@ export function ChatPanel() {
             <SkeletonBlock className="h-12 w-full" />
             <SkeletonBlock className="h-20 w-full" />
             <SkeletonBlock className="h-12 w-full" />
-            <SkeletonBlock className="h-12 w-full" />
           </aside>
           <section className="surface flex min-h-[60vh] flex-col gap-4 p-5">
             <SkeletonBlock className="h-10 w-56" />
@@ -366,7 +335,6 @@ export function ChatPanel() {
             <div className="mt-4 flex-1 space-y-3">
               <SkeletonBlock className="ml-auto h-16 w-[70%]" />
               <SkeletonBlock className="h-24 w-[78%]" />
-              <SkeletonBlock className="ml-auto h-14 w-[55%]" />
             </div>
             <SkeletonBlock className="h-14 w-full !rounded-2xl" />
           </section>
@@ -391,11 +359,11 @@ export function ChatPanel() {
         transition={{ duration: 0.35 }}
         className="chat-shell mx-auto max-w-6xl px-4 sm:px-5"
       >
-        <aside className="surface chat-aside p-4 sm:p-5">
+        <aside className="surface chat-aside signal-scroll p-4 sm:p-5">
           <MuniMascot state={muniState} className="relative mx-auto h-32 w-32 sm:h-36 sm:w-36" />
           <div className="relative mt-3 text-center">
             <p className="font-display text-lg font-semibold">Muni</p>
-            <p className="mt-1 text-sm text-muted">{opener.opener}</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted">{CHAT_OPENER}</p>
             <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5">
               <span className={`status-dot ${phase === "idle" ? "is-ready" : "is-live"}`} />
               <span className="mono text-[10px] uppercase tracking-[0.12em] text-muted">
@@ -404,11 +372,13 @@ export function ChatPanel() {
             </div>
           </div>
 
-          <div className="relative mt-5">
-            <AudienceSelect value={audience} onChange={onAudienceChange} />
+          <div className="chat-purpose mt-5">
+            <p className="mono text-[9px] uppercase tracking-[0.14em] text-muni">One job</p>
+            <p className="mt-1 text-sm leading-relaxed text-ink">
+              Answer from Yuan&apos;s verified knowledge. Cite sources. Refuse when evidence is missing.
+            </p>
           </div>
 
-          {/* After the first turn, keep a compact rail so demos stay one click away. */}
           {messages.length > 0 && (
             <div className="relative z-10 mt-5">
               <div className="mb-2 flex items-center justify-between gap-2">
@@ -418,8 +388,7 @@ export function ChatPanel() {
                 <span className="mono text-[9px] text-muted">verified asks</span>
               </div>
               <SuggestionList
-                suggestions={opener.suggestions}
-                audience={audience}
+                suggestions={railSuggestions}
                 busy={busy}
                 reduce={reduce}
                 onPick={onSuggestion}
@@ -444,22 +413,16 @@ export function ChatPanel() {
                 Answers come from verified knowledge cards. Weak grounding means an honest refuse.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="rounded-2xl border border-line bg-canvas/80 px-3 py-2 text-right">
-                <p className="mono text-[9px] uppercase tracking-[0.12em] text-muted">Audience</p>
-                <p className="font-display text-sm font-semibold">{opener.label}</p>
-              </div>
-              {messages.length > 0 && (
-                <button
-                  type="button"
-                  className="btn-secondary !min-h-9 !py-1.5 !text-xs"
-                  disabled={busy}
-                  onClick={startNewChat}
-                >
-                  New chat
-                </button>
-              )}
-            </div>
+            {messages.length > 0 && (
+              <button
+                type="button"
+                className="btn-secondary !min-h-9 !py-1.5 !text-xs"
+                disabled={busy}
+                onClick={startNewChat}
+              >
+                New chat
+              </button>
+            )}
           </div>
 
           <div
@@ -490,13 +453,23 @@ export function ChatPanel() {
                     <span className="mono text-[9px] text-muted">verified asks</span>
                   </div>
                   <SuggestionList
-                    suggestions={opener.suggestions}
-                    audience={audience}
+                    suggestions={emptySuggestions}
                     busy={busy}
                     reduce={reduce}
                     onPick={onSuggestion}
                     layout="stage"
                   />
+                  <button
+                    type="button"
+                    className="mt-3 text-xs font-semibold text-muni hover:underline"
+                    disabled={busy}
+                    onClick={() => {
+                      setQuestion(CHAT_STARTER);
+                      inputRef.current?.focus();
+                    }}
+                  >
+                    Or start typing from the starter question
+                  </button>
                 </div>
               </motion.div>
             )}
@@ -543,67 +516,67 @@ export function ChatPanel() {
                     const citations = dedupeCitations(message.citations);
                     if (!citations.length) return null;
                     return (
-                    <div className="mt-3 space-y-2">
-                      <p className="mono text-[9px] uppercase tracking-[0.14em] text-muted">
-                        cited sources · tap to inspect
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {citations.map((citation) => {
-                          const key = `${message.id}:${citation.cardId}`;
-                          const open = openCitation === key;
-                          return (
-                            <button
-                              key={citation.cardId}
-                              type="button"
-                              className={`source-chip ${open ? "is-open" : ""}`}
-                              aria-expanded={open}
-                              onClick={() =>
-                                setOpenCitation((current) => (current === key ? null : key))
-                              }
-                            >
-                              {citation.kind && (
-                                <span className="source-chip-kind">{citation.kind}</span>
-                              )}
-                              {citation.title}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <AnimatePresence>
-                        {citations.map((citation) => {
-                          const key = `${message.id}:${citation.cardId}`;
-                          if (openCitation !== key) return null;
-                          return (
-                            <motion.div
-                              key={key}
-                              initial={reduce ? false : { opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              exit={reduce ? undefined : { opacity: 0, height: 0 }}
-                              className="citation-panel"
-                            >
-                              <div className="source-quote is-static !border-l-[rgba(217,119,6,.45)]">
-                                <LinkifiedText
-                                  text={citation.quote || "No quote stored for this citation."}
-                                />
-                              </div>
+                      <div className="mt-3 space-y-2">
+                        <p className="mono text-[9px] uppercase tracking-[0.14em] text-muted">
+                          cited sources · tap to inspect
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {citations.map((citation) => {
+                            const key = `${message.id}:${citation.cardId}`;
+                            const open = openCitation === key;
+                            return (
                               <button
+                                key={citation.cardId}
                                 type="button"
-                                className="answer-card-cta mt-2"
-                                disabled={busy}
-                                onClick={() => {
-                                  setOpenCitation(null);
-                                  void ask(`What does the "${citation.title}" knowledge card cover?`, {
-                                    focusCardId: citation.cardId,
-                                  });
-                                }}
+                                className={`source-chip ${open ? "is-open" : ""}`}
+                                aria-expanded={open}
+                                onClick={() =>
+                                  setOpenCitation((current) => (current === key ? null : key))
+                                }
                               >
-                                Ask more about this
+                                {citation.kind && (
+                                  <span className="source-chip-kind">{citation.kind}</span>
+                                )}
+                                {citation.title}
                               </button>
-                            </motion.div>
-                          );
-                        })}
-                      </AnimatePresence>
-                    </div>
+                            );
+                          })}
+                        </div>
+                        <AnimatePresence>
+                          {citations.map((citation) => {
+                            const key = `${message.id}:${citation.cardId}`;
+                            if (openCitation !== key) return null;
+                            return (
+                              <motion.div
+                                key={key}
+                                initial={reduce ? false : { opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={reduce ? undefined : { opacity: 0, height: 0 }}
+                                className="citation-panel"
+                              >
+                                <div className="source-quote is-static !border-l-[rgba(217,119,6,.45)]">
+                                  <LinkifiedText
+                                    text={citation.quote || "No quote stored for this citation."}
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  className="answer-card-cta mt-2"
+                                  disabled={busy}
+                                  onClick={() => {
+                                    setOpenCitation(null);
+                                    void ask(`What does the "${citation.title}" knowledge card cover?`, {
+                                      focusCardId: citation.cardId,
+                                    });
+                                  }}
+                                >
+                                  Ask more about this
+                                </button>
+                              </motion.div>
+                            );
+                          })}
+                        </AnimatePresence>
+                      </div>
                     );
                   })()}
                 </motion.div>

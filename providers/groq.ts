@@ -31,7 +31,6 @@ export class GroqChatProvider implements ChatProvider {
   async answer(input: {
     question: string;
     cards: Array<{ id: string; title: string; body: string; kind: string }>;
-    audience?: string;
     history?: ChatHistoryTurn[];
     followUp?: boolean;
   }): Promise<GroundedAnswer> {
@@ -66,8 +65,7 @@ Return ONE JSON object with keys:
 - answer: string
 - citations: array of {cardId, title, quote?} using only cardId values from the cards list
 - confidence: number from 0 to 1 (0.85+ only when the cards clearly answer it)
-- grounded: boolean
-Audience tone: ${input.audience || "general"}.`;
+- grounded: boolean`;
 
     const historyMessages = (input.history || []).map((turn) => ({
       role: turn.role,

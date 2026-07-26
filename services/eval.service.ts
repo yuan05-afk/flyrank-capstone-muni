@@ -15,7 +15,6 @@ export const evalService = {
     for (const testCase of EVAL_CASES) {
       const response = await chatService.ask({
         question: testCase.question,
-        audience: "general",
       });
       const status = response.answer.status;
       const titles = response.citations.map((citation) => citation.title).join(" ");

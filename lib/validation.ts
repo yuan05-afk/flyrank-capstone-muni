@@ -19,10 +19,6 @@ export type GroundedAnswer = z.infer<typeof groundedAnswerSchema>;
 
 export const chatRequestSchema = z.object({
   question: z.string().min(1).max(1200),
-  audience: z
-    .enum(["recruiter", "investor", "client", "peer", "general"])
-    .optional()
-    .default("general"),
   conversationId: z.string().optional(),
   /** When set, pin this knowledge card into retrieval (citation follow-ups). */
   focusCardId: z.string().min(1).optional(),

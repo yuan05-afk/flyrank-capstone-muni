@@ -42,7 +42,6 @@ export class SeedChatProvider implements ChatProvider {
   async answer(input: {
     question: string;
     cards: Array<{ id: string; title: string; body: string; kind: string }>;
-    audience?: string;
     history?: Array<{ role: "user" | "assistant"; content: string }>;
     followUp?: boolean;
   }): Promise<GroundedAnswer> {
