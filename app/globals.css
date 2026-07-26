@@ -898,15 +898,12 @@ th {
 .muni-select.is-open .muni-select-trigger {
   border-color: rgba(217,119,6,.45);
 }
-/* Open upward so menus never hide under cards or form fields below. */
 .audience-menu,
 .muni-select-menu {
   position: absolute;
   z-index: 90;
   left: 0;
   right: 0;
-  bottom: calc(100% + 8px);
-  top: auto;
   margin: 0;
   padding: 6px;
   list-style: none;
@@ -916,6 +913,17 @@ th {
   box-shadow: 0 -12px 32px rgba(16,24,40,.1);
   max-height: min(280px, 45vh);
   overflow-y: auto;
+}
+.audience-menu--down {
+  top: calc(100% + 8px);
+  bottom: auto;
+  box-shadow: 0 12px 32px rgba(16,24,40,.1);
+}
+.audience-menu--up,
+.muni-select-menu {
+  top: auto;
+  bottom: calc(100% + 8px);
+  box-shadow: 0 -12px 32px rgba(16,24,40,.1);
 }
 .audience-option,
 .muni-select-option {

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { groundedAnswerSchema } from "@/lib/validation";
-import { guardGrounding, isSocialOpener } from "@/services/guard.service";
+import {
+  guardGrounding,
+  isSensitivePrivateQuestion,
+  isSocialOpener,
+} from "@/services/guard.service";
 import { SeedChatProvider, SeedEmbeddingProvider } from "@/providers/seed";
 import { cosineSimilarity } from "@/lib/similarity";
 import { chatService } from "@/services/chat.service";
@@ -52,6 +56,18 @@ describe("grounding guard", () => {
       allowedCardIds: ["a"],
     });
     expect(verdict.status).toBe("guarded");
+  });
+});
+
+describe("deterministic privacy guard", () => {
+  it("blocks salary, phone, and pre-college requests before retrieval", () => {
+    expect(isSensitivePrivateQuestion("What is Yuan's secret salary?")).toBe(true);
+    expect(isSensitivePrivateQuestion("What is Yuan's phone number?")).toBe(true);
+    expect(isSensitivePrivateQuestion("Where did Yuan go to senior high school?")).toBe(true);
+  });
+
+  it("does not block the public contact path", () => {
+    expect(isSensitivePrivateQuestion("How can someone contact Yuan?")).toBe(false);
   });
 });
 

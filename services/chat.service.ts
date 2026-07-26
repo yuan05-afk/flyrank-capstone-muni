@@ -8,7 +8,12 @@ import {
   conversationRepository,
   costsRepository,
 } from "@/repositories";
-import { guardGrounding, isSocialOpener, topicalOverlap } from "./guard.service";
+import {
+  guardGrounding,
+  isSensitivePrivateQuestion,
+  isSocialOpener,
+  topicalOverlap,
+} from "./guard.service";
 import {
   expandRetrievalQuery,
   formatHistoryForProvider,
@@ -18,6 +23,8 @@ import { retrieveService } from "./retrieve.service";
 
 const REFUSAL =
   "I do not have verified knowledge for that. I only speak from Yuan's knowledge cards. Type your question here anyway to leave a note for Yuan's owner inbox, or open the Contact section on the Muni site.";
+const PRIVACY_REFUSAL =
+  "I cannot share private or excluded personal information. I only answer from Yuan's verified knowledge, such as college education, skills, organizations, and shipped work. You can still leave this note for Yuan in the owner inbox.";
 
 function socialReply(audience?: string) {
   const key = (audience || "general") as Audience;
@@ -105,6 +112,52 @@ export const chatService = {
     const history = formatHistoryForProvider(priorMessages);
 
     await conversationRepository.addMessage(conversationId, "user", input.question);
+
+    if (isSensitivePrivateQuestion(input.question)) {
+      const provider = chatProvider();
+      const record = await answersRepository.create({
+        conversationId,
+        question: input.question,
+        answer: PRIVACY_REFUSAL,
+        citationsJson: "[]",
+        grounded: false,
+        status: "refused",
+        guardReason: "Deterministic privacy policy blocked a sensitive or excluded-data request.",
+        confidence: 1,
+        policyId: GROUNDING_POLICY_ID,
+        featuresJson: JSON.stringify({
+          bestScore: 0,
+          confidence: 1,
+          citationCount: 0,
+          retrievedCount: 0,
+          topicalOverlap: 0,
+          belowSimilarityFloor: false,
+          belowConfidenceFloor: false,
+          belowTopicalFloor: false,
+          citationsValid: true,
+          privacyBlocked: true,
+        }),
+      });
+      await Promise.all([
+        conversationRepository.addMessage(conversationId, "assistant", PRIVACY_REFUSAL),
+        costsRepository.create({
+          kind: "chat",
+          model: provider.id,
+          units: 0,
+          unitCostUsd: 0,
+          totalUsd: 0,
+          refType: "answer",
+          refId: record.id,
+        }),
+      ]);
+      return {
+        conversationId,
+        answer: record,
+        citations: [],
+        retrieved: [],
+        provider: provider.id,
+      };
+    }
 
     if (isSocialOpener(input.question)) {
       const provider = chatProvider();

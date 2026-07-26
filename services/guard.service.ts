@@ -42,6 +42,25 @@ export function isSocialOpener(question: string): boolean {
   return openers.some((pattern) => pattern.test(cleaned));
 }
 
+/**
+ * Privacy policy is deterministic and runs before retrieval. Sensitive terms
+ * can legitimately appear in refusal FAQ cards, so semantic similarity alone
+ * must never turn a private-data request into a grounded answer.
+ */
+export function isSensitivePrivateQuestion(question: string): boolean {
+  const cleaned = question.toLowerCase().replace(/\s+/g, " ").trim();
+  const privatePatterns = [
+    /\b(salary|compensation|income|paycheck|bank|bank account|credit card|debit card)\b/,
+    /\b(phone|mobile|cellphone|contact)\s+(number|no\.?)\b/,
+    /\b(personal\s+)?email(\s+address)?\b/,
+    /\b(home|residential|exact)\s+address\b/,
+    /\b(password|passcode|api key|secret key|private key)\b/,
+    /\b(senior|junior)\s+high\s+school\b/,
+    /\b(pre[- ]?college|past school|previous school)\b/,
+  ];
+  return privatePatterns.some((pattern) => pattern.test(cleaned));
+}
+
 const STOP = new Set([
   "a", "an", "the", "and", "or", "of", "to", "for", "in", "on", "is", "are",
   "was", "what", "who", "how", "does", "did", "about", "with", "from",
