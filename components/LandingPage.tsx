@@ -61,7 +61,7 @@ function HelloCard({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function LandingPage() {
+export function LandingPage({ knowledgeCount }: { knowledgeCount: number }) {
   const lenisRef = useLenis();
   const reduce = useReducedMotion();
   const { mode, exiting, showFlank, flankActive } = useHeroMode(1280);
@@ -210,7 +210,7 @@ export function LandingPage() {
         <div className="chapter-head">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 28 }}
-            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={viewIn}
             transition={{ duration: 0.55, ease: EASE }}
           >
@@ -227,7 +227,7 @@ export function LandingPage() {
           {features.map(({ Icon, title, copy }, index) => (
             <motion.article
               key={title}
-              whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
               initial={reduce ? false : { opacity: 0, y: 22 }}
               transition={{ delay: index * 0.06, duration: 0.45, ease: EASE }}
               viewport={viewIn}
@@ -249,7 +249,7 @@ export function LandingPage() {
         <div className="chapter-head">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 28 }}
-            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={viewIn}
             transition={{ duration: 0.55, ease: EASE }}
           >
@@ -264,7 +264,7 @@ export function LandingPage() {
         </div>
         <div className="grid-2">
           <motion.article
-            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             initial={reduce ? false : { opacity: 0, y: 18 }}
             viewport={viewIn}
             transition={{ duration: 0.45, ease: EASE }}
@@ -288,7 +288,7 @@ export function LandingPage() {
             </div>
           </motion.article>
           <motion.article
-            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             initial={reduce ? false : { opacity: 0, y: 18 }}
             viewport={{ ...viewIn, amount: 0.18 }}
             transition={{ duration: 0.45, delay: reduce ? 0 : 0.05, ease: EASE }}
@@ -317,7 +317,7 @@ export function LandingPage() {
       <ScrollChapter className="chapter">
         <div className="grid-3">
           {[
-            ["35", "verified knowledge cards"],
+            [String(knowledgeCount), "verified knowledge cards"],
             ["4", "live Capstone demos"],
             ["0.80+", "eval floors"],
           ].map(([v, l], index) => (
@@ -325,7 +325,7 @@ export function LandingPage() {
               key={l}
               tabIndex={0}
               className="surface feature-card text-center"
-              whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
               initial={reduce ? false : { opacity: 0, y: 16 }}
               transition={{ delay: index * 0.05, duration: 0.4, ease: EASE }}
               viewport={viewIn}
@@ -344,7 +344,7 @@ export function LandingPage() {
       <ScrollChapter className="chapter">
         <motion.div
           className="surface flex flex-col items-center p-8 text-center sm:p-16"
-          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           initial={reduce ? false : { opacity: 0, y: 20 }}
           viewport={{ once: false, amount: 0.35 }}
           transition={{ duration: 0.5, ease: EASE }}

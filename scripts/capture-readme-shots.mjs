@@ -31,7 +31,10 @@ async function askChat(page, question, expect) {
     .first()
     .waitFor({ timeout: 60000 });
   if (expect === "grounded") {
-    await page.getByText("cited sources", { exact: false }).first().waitFor({ timeout: 15000 });
+    await page
+      .getByText("suggested next asks", { exact: false })
+      .first()
+      .waitFor({ timeout: 15000 });
   }
   await sleep(1600);
 }
@@ -113,6 +116,12 @@ await page.goto(`${BASE}/desk`, { waitUntil: "domcontentloaded" });
 await page.getByRole("button", { name: "Embed knowledge" }).waitFor({
   timeout: 20000,
 });
+// The live eval runs several chat rounds after the inbox paints. Wait for the
+// real score so the README never shows the "scoring live eval..." placeholder.
+await page
+  .getByText("refusal recall (live eval)", { exact: false })
+  .first()
+  .waitFor({ timeout: 120000 });
 await sleep(2500);
 await page.screenshot({
   path: path.join(OUT, "muni-desk.png"),

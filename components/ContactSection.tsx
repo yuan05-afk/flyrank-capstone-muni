@@ -73,7 +73,7 @@ export function ContactSection({
       <div className="chapter-head">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 28 }}
-          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={viewIn}
           transition={{ duration: 0.55, ease: EASE }}
         >
@@ -95,7 +95,7 @@ export function ContactSection({
           rel="noopener noreferrer"
           className="surface contact-card focus-ring"
           initial={reduce ? false : { opacity: 0, y: 18 }}
-          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={viewIn}
           transition={{ duration: 0.4, ease: EASE }}
           whileHover={reduce ? undefined : { y: -4 }}
@@ -116,7 +116,7 @@ export function ContactSection({
           href="/chat"
           className="surface contact-card focus-ring"
           initial={reduce ? false : { opacity: 0, y: 18 }}
-          whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={viewIn}
           transition={{ duration: 0.4, delay: reduce ? 0 : 0.04, ease: EASE }}
           whileHover={reduce ? undefined : { y: -4 }}
@@ -141,7 +141,7 @@ export function ContactSection({
             rel="noopener noreferrer"
             className="surface contact-card focus-ring"
             initial={reduce ? false : { opacity: 0, y: 18 }}
-            whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={viewIn}
             transition={{ duration: 0.4, delay: reduce ? 0 : 0.06 + index * 0.04, ease: EASE }}
             whileHover={reduce ? undefined : { y: -4 }}
