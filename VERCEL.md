@@ -38,6 +38,7 @@ When your four Capstone apps are live on Vercel, set these in **Settings → Env
 | `NEXT_PUBLIC_CAPSTONE_CHECKPOINT_URL` | `https://checkpoint-flyrank.vercel.app` |
 | `NEXT_PUBLIC_CAPSTONE_LENS_URL` | `https://lens-flyrank.vercel.app` |
 | `NEXT_PUBLIC_CAPSTONE_BROADCAST_URL` | `https://broadcast-flyrank.vercel.app` |
+| `NEXT_PUBLIC_CAPSTONE_LEDGER_URL` | `https://ledger-flyrank.vercel.app` |
 
 These drive Capstone hyperlinks in knowledge cards and chat answers.
 

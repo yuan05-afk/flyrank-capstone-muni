@@ -50,7 +50,7 @@ const FOLLOW_UPS: Record<string, DemoPanel> = {
   "What Capstones has Yuan shipped?": {
     question: "What Capstones has Yuan shipped?",
     answer:
-      "Yuan shipped four live FlyRank Capstones: Checkpoint, Lens, Broadcast, and Muni. CheckMyDevice and ShopScript are separate personal and course projects.",
+      "Yuan shipped five live FlyRank Capstones: Checkpoint, Lens, Broadcast, Ledger, and Muni. CheckMyDevice and ShopScript are separate personal and course projects.",
     confidence: "0.91",
     nextAsks: ["What is Muni?", "What will Muni refuse?"],
   },

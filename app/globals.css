@@ -690,6 +690,11 @@ a.source-chip {
   border-color: rgba(225, 29, 72, 0.25);
   background: rgba(255, 228, 232, 0.55);
 }
+.muni-marquee-chip--ledger {
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.28);
+  background: rgba(255, 237, 213, 0.65);
+}
 .muni-marquee-status { border: none; }
 .muni-marquee-status--grounded {
   background: #ecfdf3;

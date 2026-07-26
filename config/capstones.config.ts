@@ -35,6 +35,14 @@ export const CAPSTONE_LINKS: CapstoneLink[] = [
       "https://broadcast-flyrank.vercel.app",
   },
   {
+    id: "ledger",
+    name: "Ledger",
+    tagline: "Usage metering and billing with idempotent events, quotas, cost rollups, and Stripe test sync.",
+    url:
+      process.env.NEXT_PUBLIC_CAPSTONE_LEDGER_URL ||
+      "https://ledger-flyrank.vercel.app",
+  },
+  {
     id: "muni",
     name: "Muni",
     tagline: "This grounded personal agent that cites verified knowledge and refuses without evidence.",

@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const body =
-  "Use the Contact section on the Muni site (https://muni-flyrank.vercel.app/#contact): open Yuan's GitHub at https://github.com/yuan05-afk, leave a note in chat so it lands in the owner inbox, or open any live Capstone demo (Checkpoint, Lens, Broadcast, Muni).";
+  "Use the Contact section on the Muni site (https://muni-flyrank.vercel.app/#contact): open Yuan's GitHub at https://github.com/yuan05-afk, leave a note in chat so it lands in the owner inbox, or open any live Capstone demo (Checkpoint, Lens, Broadcast, Ledger, Muni).";
 
 async function main() {
   const card = await prisma.knowledgeCard.findFirst({

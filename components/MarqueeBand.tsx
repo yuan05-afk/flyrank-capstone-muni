@@ -9,7 +9,7 @@ import { CAPSTONE_LINKS, capstoneUrl } from "@/config/capstones.config";
  * Capstone chips use each product's live favicon and link to its domain.
  */
 
-type CapstoneTone = "checkpoint" | "lens" | "broadcast" | "muni";
+type CapstoneTone = "checkpoint" | "lens" | "broadcast" | "ledger" | "muni";
 
 type Token =
   | { kind: "capstone"; label: string; tone: CapstoneTone }
@@ -20,6 +20,7 @@ const FAVICON: Record<CapstoneTone, string> = {
   checkpoint: "/capstones/checkpoint.svg",
   lens: "/capstones/lens.svg",
   broadcast: "/capstones/broadcast.svg",
+  ledger: "/capstones/ledger.svg",
   muni: "/capstones/muni.svg",
 };
 
@@ -31,6 +32,7 @@ const ROW_A: Token[] = [
   { kind: "word", label: "Think first" },
   { kind: "capstone", label: "Broadcast", tone: "broadcast" },
   { kind: "status", label: "refused", tone: "refused" },
+  { kind: "capstone", label: "Ledger", tone: "ledger" },
   { kind: "capstone", label: "Muni", tone: "muni" },
   { kind: "word", label: "Verified cards only" },
   { kind: "status", label: "thinking", tone: "thinking" },
@@ -43,6 +45,7 @@ const ROW_B: Token[] = [
   { kind: "capstone", label: "Lens", tone: "lens" },
   { kind: "word", label: "Live Capstone links" },
   { kind: "status", label: "refused", tone: "refused" },
+  { kind: "capstone", label: "Ledger", tone: "ledger" },
   { kind: "word", label: "Honest refuse" },
   { kind: "capstone", label: "Broadcast", tone: "broadcast" },
   { kind: "word", label: "Code-assist refuse" },
@@ -118,7 +121,7 @@ export function MarqueeBand() {
     <div
       className={`muni-marquee ${shouldReduce ? "muni-marquee--static" : ""}`}
       role="img"
-      aria-label="Muni answers from verified knowledge, suggests next asks, refuses without evidence, and links Yuan's live Capstones: Checkpoint, Lens, Broadcast, and Muni."
+      aria-label="Muni answers from verified knowledge, suggests next asks, refuses without evidence, and links Yuan's live Capstones: Checkpoint, Lens, Broadcast, Ledger, and Muni."
     >
       <Track tokens={ROW_A} dir="left" />
       <Track tokens={ROW_B} dir="right" />

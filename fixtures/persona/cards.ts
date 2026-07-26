@@ -17,7 +17,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "bio",
     title: "About Yuan",
-    body: "Yuan is a Bachelor of Science in Computer Science student specializing in Data Science at FEU Institute of Technology (FEU Tech), and a FlyRankAI intern building Capstone products across Backend AI Engineering and General AI Fluency. Yuan's full name is Yuan Andrei C. Mariano, and Yuan usually goes by Yuan. Yuan has training in machine learning, data analysis, artificial intelligence, and software engineering, with hands-on experience from academic projects, collaborative work, and technical tasks in data modeling, programming, problem-solving, algorithm development, and data-driven solutions. Recently Yuan shipped four live FlyRank Capstones: Checkpoint, Lens, Broadcast, and Muni. Beyond Capstones, Yuan also built CheckMyDevice as a personal project and ShopScript as a CS0035 Programming Languages course project. Yuan is based in the Philippines.",
+    body: "Yuan is a Bachelor of Science in Computer Science student specializing in Data Science at FEU Institute of Technology (FEU Tech), and a FlyRankAI intern building Capstone products across Backend AI Engineering and General AI Fluency. Yuan's full name is Yuan Andrei C. Mariano, and Yuan usually goes by Yuan. Yuan has training in machine learning, data analysis, artificial intelligence, and software engineering, with hands-on experience from academic projects, collaborative work, and technical tasks in data modeling, programming, problem-solving, algorithm development, and data-driven solutions. Recently Yuan shipped five live FlyRank Capstones: Checkpoint, Lens, Broadcast, Ledger, and Muni. Beyond Capstones, Yuan also built CheckMyDevice as a personal project and ShopScript as a CS0035 Programming Languages course project. Yuan is based in the Philippines.",
     sourceId: "persona.bio",
     tags: ["yuan", "andrei", "mariano", "who", "about", "bio", "introduction", "philippines", "intern", "flyrank"],
   },
@@ -52,7 +52,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "bio",
     title: "FlyRankAI internship",
-    body: "Yuan is a FlyRankAI intern focused on Backend AI Engineering and General AI Fluency. The internship track ships Capstone products with clear demos, honest evals, provider interfaces, durable jobs, cost ledgers, and grounding or mismatch guards so AI behavior stays auditable. The four live Capstones from this work are Checkpoint, Lens, Broadcast, and Muni.",
+    body: "Yuan is a FlyRankAI intern focused on Backend AI Engineering and General AI Fluency. The internship track ships Capstone products with clear demos, honest evals, provider interfaces, durable jobs, cost ledgers, and grounding or mismatch guards so AI behavior stays auditable. The five live Capstones from this work are Checkpoint, Lens, Broadcast, Ledger, and Muni.",
     sourceId: "persona.internship",
     tags: ["internship", "flyrank", "flyrankai", "intern", "work", "job", "experience", "backend ai", "fluency"],
   },
@@ -79,6 +79,26 @@ export const PERSONA_CARDS: PersonaCard[] = [
   },
   {
     kind: "project",
+    title: "Ledger usage metering",
+    body: `Ledger is a FlyRank Capstone Yuan shipped: a usage metering and billing service that records billable events behind an Idempotency-Key so retries never double-count, enforces plan quotas with honest 402 or 429 responses, rolls cost with pinned token rules (cached input cheaper; reasoning billed as output), and syncs Free to Pro upgrades through Stripe test Checkout plus signed webhooks that dedupe event.id. The usage console shows dual meters and a live Process panel. Live demo: ${capstoneUrl("ledger")}.`,
+    sourceId: "persona.ledger",
+    tags: [
+      "ledger",
+      "quota",
+      "meter",
+      "metering",
+      "billing",
+      "idempotency",
+      "stripe",
+      "usage",
+      "402",
+      "429",
+      "project",
+      "capstone",
+    ],
+  },
+  {
+    kind: "project",
     title: "Muni grounded personal agent",
     body: `Muni is Yuan's General AI Fluency Impact Project Capstone: a personal brand site plus a grounded agent that answers from verified knowledge and refuses when evidence is missing. The name comes from Filipino muni-muni, thoughtful reflection. Muni retrieves knowledge cards, shows suggested next asks in chat, keeps an owner decision inbox with source audit, and links Yuan's live Capstones. Live demo: ${capstoneUrl("muni")}.`,
     sourceId: "persona.muni",
@@ -87,7 +107,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "project",
     title: "Capstone portfolio overview",
-    body: `Yuan has shipped four live FlyRank Capstones that form the internship Capstone portfolio: Checkpoint for embeddable lead capture, Lens for image relevance with a mismatch guard, Broadcast for social campaign variants, and Muni for grounded personal answers with suggested next asks. These four are FlyRankAI Capstones, not personal side projects and not FEU Tech course projects. Together they show widget APIs, retrieval guards, durable jobs, eval habits, and product polish. Live sites: ${CAPSTONE_LINKS.map((l) => `${l.name} ${l.url}`).join("; ")}.`,
+    body: `Yuan has shipped five live FlyRank Capstones that form the internship Capstone portfolio: Checkpoint for embeddable lead capture, Lens for image relevance with a mismatch guard, Broadcast for social campaign variants, Ledger for idempotent usage metering and billing, and Muni for grounded personal answers with suggested next asks. These five are FlyRankAI Capstones, not personal side projects and not FEU Tech course projects. Together they show widget APIs, retrieval guards, durable jobs, metering honesty, eval habits, and product polish. Live sites: ${CAPSTONE_LINKS.map((l) => `${l.name} ${l.url}`).join("; ")}.`,
     sourceId: "persona.portfolio",
     tags: ["portfolio", "capstones", "shipped", "work", "demos", "overview", "flyrank capstones", "internship projects"],
   },
@@ -135,7 +155,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "project",
     title: "All projects overview",
-    body: `Yuan's shipped work falls into three clear lanes. FlyRank Capstones (internship): Checkpoint, Lens, Broadcast, and Muni. Personal project: CheckMyDevice, a privacy-first browser hardware diagnostic suite at https://checkmydevice.vercel.app/ (GitHub https://github.com/yuan05-afk/CheckMyDevice). Course project for CS0035 Programming Languages: ShopScript, an educational e-commerce interpreter at https://shopscript-ecommerce.vercel.app/ (GitHub https://github.com/yuan05-afk/shopscript-ecommerce-interpreter). Capstones prove AI product craft; CheckMyDevice proves personal privacy-first frontend systems; ShopScript proves programming-language pipeline craft from coursework.`,
+    body: `Yuan's shipped work falls into three clear lanes. FlyRank Capstones (internship): Checkpoint, Lens, Broadcast, Ledger, and Muni. Personal project: CheckMyDevice, a privacy-first browser hardware diagnostic suite at https://checkmydevice.vercel.app/ (GitHub https://github.com/yuan05-afk/CheckMyDevice). Course project for CS0035 Programming Languages: ShopScript, an educational e-commerce interpreter at https://shopscript-ecommerce.vercel.app/ (GitHub https://github.com/yuan05-afk/shopscript-ecommerce-interpreter). Capstones prove AI product craft; CheckMyDevice proves personal privacy-first frontend systems; ShopScript proves programming-language pipeline craft from coursework.`,
     sourceId: "persona.projects-all",
     tags: [
       "portfolio",
@@ -224,7 +244,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "faq",
     title: "Who is Yuan?",
-    body: "Yuan is an FEU Tech BS Computer Science (Data Science) student, Dean's and President's Lister, FlyRankAI intern, and builder of four live Capstones: Checkpoint, Lens, Broadcast, and Muni. Yuan also built CheckMyDevice as a personal project and ShopScript as a CS0035 Programming Languages course project. Yuan's full name is Yuan Andrei C. Mariano. Ask Muni about college education, skills, projects, organizations, or how to leave a note. Muni will refuse private details that are not in the verified cards.",
+    body: "Yuan is an FEU Tech BS Computer Science (Data Science) student, Dean's and President's Lister, FlyRankAI intern, and builder of five live Capstones: Checkpoint, Lens, Broadcast, Ledger, and Muni. Yuan also built CheckMyDevice as a personal project and ShopScript as a CS0035 Programming Languages course project. Yuan's full name is Yuan Andrei C. Mariano. Ask Muni about college education, skills, projects, organizations, or how to leave a note. Muni will refuse private details that are not in the verified cards.",
     sourceId: "persona.faq.who",
     tags: ["who is yuan", "about yuan", "introduce", "summary"],
   },
@@ -300,15 +320,15 @@ export const PERSONA_CARDS: PersonaCard[] = [
   },
   {
     kind: "faq",
-    title: "What is the difference between Checkpoint Lens Broadcast and Muni?",
-    body: "Checkpoint captures leads through an embeddable widget with tenant isolation. Lens matches images to meaning and refuses mismatches. Broadcast generates platform-aware social variants with jobs and webhooks. Muni is the personal grounded agent that answers from Yuan's verified knowledge. All four are live FlyRank Capstones Yuan shipped. They are separate from CheckMyDevice (personal) and ShopScript (CS0035 course project).",
+    title: "What is the difference between Checkpoint Lens Broadcast Ledger and Muni?",
+    body: "Checkpoint captures leads through an embeddable widget with tenant isolation. Lens matches images to meaning and refuses mismatches. Broadcast generates platform-aware social variants with jobs and webhooks. Ledger meters usage idempotently, enforces quotas with 402 or 429, rolls cost, and syncs Stripe test upgrades. Muni is the personal grounded agent that answers from Yuan's verified knowledge. All five are live FlyRank Capstones Yuan shipped. They are separate from CheckMyDevice (personal) and ShopScript (CS0035 course project).",
     sourceId: "persona.faq.compare-capstones",
-    tags: ["difference", "compare", "which project", "four capstones"],
+    tags: ["difference", "compare", "which project", "five capstones", "four capstones", "ledger"],
   },
   {
     kind: "faq",
     title: "How do Capstones differ from CheckMyDevice and ShopScript?",
-    body: "Yuan's work has three lanes. FlyRank Capstones are internship products: Checkpoint, Lens, Broadcast, and Muni. CheckMyDevice is a personal project: a privacy-first browser hardware diagnostic suite Yuan built independently. ShopScript is a course project for CS0035 Programming Languages: an educational e-commerce mini-language interpreter where Yuan was Lead Developer with teammates Fitz Tobias and Dwayne Mongaya. Capstones show AI product craft, CheckMyDevice shows personal systems craft, and ShopScript shows programming-language coursework craft.",
+    body: "Yuan's work has three lanes. FlyRank Capstones are internship products: Checkpoint, Lens, Broadcast, Ledger, and Muni. CheckMyDevice is a personal project: a privacy-first browser hardware diagnostic suite Yuan built independently. ShopScript is a course project for CS0035 Programming Languages: an educational e-commerce mini-language interpreter where Yuan was Lead Developer with teammates Fitz Tobias and Dwayne Mongaya. Capstones show AI product craft, CheckMyDevice shows personal systems craft, and ShopScript shows programming-language coursework craft.",
     sourceId: "persona.faq.project-lanes",
     tags: [
       "personal project",
@@ -340,7 +360,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
     kind: "link",
     title: "FlyRank Capstones (live sites)",
     body: [
-      "Yuan's four FlyRank Capstones are live and runnable.",
+      "Yuan's five FlyRank Capstones are live and runnable.",
       ...CAPSTONE_LINKS.map((link) => `${link.name}: ${link.url}. ${link.tagline}`),
       "Each Capstone is also published as a public GitHub repository with a pitch README, screenshots, and demos.",
       "Separate from Capstones: CheckMyDevice (personal) and ShopScript (CS0035 course project).",
@@ -378,6 +398,12 @@ export const EVAL_CASES = [
     question: "What is Lens and what does its mismatch guard do?",
     expectedStatus: "grounded" as const,
     expectedTitleIncludes: "Lens",
+  },
+  {
+    id: "in-scope-ledger",
+    question: "What is Ledger and how does it stop double charges?",
+    expectedStatus: "grounded" as const,
+    expectedTitleIncludes: "Ledger",
   },
   {
     id: "in-scope-muni",
