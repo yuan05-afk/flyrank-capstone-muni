@@ -10,6 +10,7 @@ import {
 } from "@/repositories";
 import {
   guardGrounding,
+  isOutOfDomainFantasyQuestion,
   isSensitivePrivateQuestion,
   isSocialOpener,
   topicalOverlap,
@@ -110,6 +111,56 @@ export const chatService = {
     const history = formatHistoryForProvider(priorMessages);
 
     await conversationRepository.addMessage(conversationId, "user", input.question);
+
+    if (isOutOfDomainFantasyQuestion(input.question)) {
+      const provider = chatProvider();
+      const record = await answersRepository.create({
+        conversationId,
+        question: input.question,
+        answer: REFUSAL,
+        citationsJson: "[]",
+        grounded: false,
+        status: "refused",
+        guardReason: "Deterministic out-of-domain fantasy policy blocked an unsupported claim.",
+        confidence: 1,
+        policyId: GROUNDING_POLICY_ID,
+        featuresJson: JSON.stringify({
+          bestScore: 0,
+          confidence: 1,
+          citationCount: 0,
+          retrievedCount: 0,
+          topicalOverlap: 0,
+          belowSimilarityFloor: false,
+          belowConfidenceFloor: false,
+          belowTopicalFloor: false,
+          citationsValid: true,
+          fantasyBlocked: true,
+        }),
+      });
+      await Promise.all([
+        conversationRepository.addMessage(conversationId, "assistant", REFUSAL),
+        costsRepository.create({
+          kind: "chat",
+          model: provider.id,
+          units: 0,
+          unitCostUsd: 0,
+          totalUsd: 0,
+          refType: "answer",
+          refId: record.id,
+        }),
+      ]);
+      return {
+        conversationId,
+        answer: record,
+        citations: [],
+        suggestions: buildFollowUps({
+          status: "refused",
+          question: input.question,
+        }),
+        retrieved: [],
+        provider: provider.id,
+      };
+    }
 
     if (isSensitivePrivateQuestion(input.question)) {
       const provider = chatProvider();
@@ -232,13 +283,34 @@ export const chatService = {
           for (const token of q.split(/[^a-z0-9]+/).filter((part) => part.length > 2)) {
             if (hay.includes(token) || hay.includes(token.replace(/s$/, ""))) points += 1;
           }
-          if (/project|capstone/i.test(`${card.kind} ${card.title}`) && /capstone|project|shipped/i.test(q)) {
+          if (
+            /project|capstone/i.test(`${card.kind} ${card.title}`) &&
+            /capstone|project|shipped|checkmydevice|shopscript|cs0035/i.test(q)
+          ) {
             points += 3;
           }
-          if (/portfolio|overview|difference between/i.test(card.title) && /capstone|project|shipped/i.test(q)) {
+          if (
+            /all projects overview/i.test(card.title) &&
+            /project|shipped|personal|course|besides/i.test(q)
+          ) {
+            points += 5;
+          }
+          if (/checkmydevice/i.test(card.title) && /checkmydevice|personal project|hardware/i.test(q)) {
+            points += 5;
+          }
+          if (/shopscript/i.test(card.title) && /shopscript|cs0035|course project|interpreter/i.test(q)) {
+            points += 5;
+          }
+          if (
+            /portfolio|overview|difference between|project lanes/i.test(card.title) &&
+            /capstone|project|shipped|personal|course/i.test(q)
+          ) {
             points += 4;
           }
-          if (/full name|identity|about yuan/i.test(card.title) && /capstone|project|shipped/i.test(q)) {
+          if (
+            /full name|identity|about yuan/i.test(card.title) &&
+            /capstone|project|shipped|checkmydevice|shopscript/i.test(q)
+          ) {
             points -= 3;
           }
           return points;

@@ -62,6 +62,22 @@ export function buildFollowUps(input: {
       push("Who is Yuan?", "Who is Yuan and what does Yuan build?");
       continue;
     }
+    if (/checkmydevice/i.test(clean)) {
+      push("ShopScript", "What is ShopScript and which course is it for?");
+      push("Project lanes", "How do Capstones differ from CheckMyDevice and ShopScript?");
+      continue;
+    }
+    if (/shopscript/i.test(clean)) {
+      push("CheckMyDevice", "What is CheckMyDevice and is it a Capstone?");
+      push("Project lanes", "How do Capstones differ from CheckMyDevice and ShopScript?");
+      continue;
+    }
+    if (/all projects|project lanes/i.test(clean)) {
+      push("CheckMyDevice", "What is CheckMyDevice and is it a Capstone?");
+      push("ShopScript", "What is ShopScript and which course is it for?");
+      push("Shipped Capstones", "What Capstone projects has Yuan shipped?");
+      continue;
+    }
     if (/capstone portfolio|checkpoint|lens|broadcast|muni grounded/i.test(clean)) {
       push(
         /checkpoint/i.test(clean)

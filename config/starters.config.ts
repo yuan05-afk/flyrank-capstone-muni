@@ -9,7 +9,7 @@ export type StarterSuggestion = {
  * Audience personas were removed: they only changed UI copy, not grounding behavior.
  */
 export const CHAT_OPENER =
-  "Ask about Yuan's college, Capstones, skills, or how to leave a note. I only answer from verified knowledge.";
+  "Ask about Yuan's college, Capstones, personal and course projects, skills, or how to leave a note. I only answer from verified knowledge.";
 
 export const CHAT_STARTER = "Who is Yuan and what does Yuan build?";
 
@@ -27,6 +27,11 @@ export const STARTER_SUGGESTIONS: StarterSuggestion[] = [
   {
     label: "Shipped Capstones",
     question: "What Capstone projects has Yuan shipped?",
+    kind: "grounded",
+  },
+  {
+    label: "Other projects",
+    question: "What personal and course projects has Yuan built besides Capstones?",
     kind: "grounded",
   },
   {

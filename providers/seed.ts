@@ -57,14 +57,25 @@ function cardRelevance(
     score += 0.5;
   }
   if (/project|capstone|portfolio/i.test(`${card.kind} ${card.title}`) &&
-      /\b(capstone|project|shipped|portfolio)\b/i.test(question)) {
+      /\b(capstone|project|shipped|portfolio|checkmydevice|shopscript|cs0035)\b/i.test(question)) {
     score += 0.35;
   }
-  if (/portfolio|overview|difference between/i.test(card.title) &&
-      /\b(capstone|project|shipped|projects)\b/i.test(question)) {
+  if (/all projects overview/i.test(card.title) &&
+      /\b(project|shipped|projects|personal|course|besides)\b/i.test(question)) {
+    score += 0.55;
+  }
+  if (/checkmydevice/i.test(card.title) && /\b(checkmydevice|personal project|hardware)\b/i.test(question)) {
+    score += 0.5;
+  }
+  if (/shopscript/i.test(card.title) && /\b(shopscript|cs0035|course project|interpreter)\b/i.test(question)) {
+    score += 0.5;
+  }
+  if (/portfolio|overview|difference between|project lanes/i.test(card.title) &&
+      /\b(capstone|project|shipped|projects|personal|course)\b/i.test(question)) {
     score += 0.45;
   }
-  if (/full name|identity/i.test(card.title) && /\b(capstone|project|shipped)\b/i.test(question)) {
+  if (/full name|identity/i.test(card.title) &&
+      /\b(capstone|project|shipped|checkmydevice|shopscript)\b/i.test(question)) {
     score -= 0.4;
   }
   return score;

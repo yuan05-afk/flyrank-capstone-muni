@@ -61,6 +61,19 @@ export function isSensitivePrivateQuestion(question: string): boolean {
   return privatePatterns.some((pattern) => pattern.test(cleaned));
 }
 
+/**
+ * Fantasy / celebrity claims must refuse even if a common word like "team"
+ * accidentally overlaps a knowledge card (for example Code Wars team leader).
+ */
+export function isOutOfDomainFantasyQuestion(question: string): boolean {
+  const cleaned = question.toLowerCase().replace(/\s+/g, " ").trim();
+  return (
+    /\b(nba|nfl|mlb|nhl|fifa|uefa|olympic|olympics)\b/.test(cleaned) ||
+    /\b(astronaut|nobel prize|grammy|oscar winner|super bowl)\b/.test(cleaned) ||
+    (/\b(played?|play)\s+for\b/.test(cleaned) && /\b(team|club|franchise)\b/.test(cleaned))
+  );
+}
+
 const STOP = new Set([
   "a", "an", "the", "and", "or", "of", "to", "for", "in", "on", "is", "are",
   "was", "what", "who", "how", "does", "did", "about", "with", "from",
@@ -81,9 +94,22 @@ export function topicalOverlap(question: string, corpus: string): number {
     if (/\byuan\b/.test(lower) || /\bmuni\b/.test(lower)) return 1;
     return 0;
   }
-  const hay = corpus.toLowerCase();
-  const hits = q.filter((token) => hay.includes(token)).length;
-  return hits / q.length;
+  // Match whole tokens only. Substring includes() falsely grounded fantasy asks
+  // like "play" against CheckMyDevice's "display".
+  const hayTokens = new Set(
+    corpus
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter((token) => token.length >= 2)
+  );
+  // Owner name alone should not buoy out-of-domain asks against the full corpus.
+  // Keep identity tokens when the question is mostly about Muni/Yuan itself.
+  const identity = new Set(["yuan", "muni"]);
+  const content = q.filter((token) => !identity.has(token));
+  const scored = content.length >= 2 ? content : q;
+  const hits = scored.filter((token) => hayTokens.has(token)).length;
+  return hits / scored.length;
 }
 
 export function guardGrounding(input: {

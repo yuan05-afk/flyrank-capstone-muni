@@ -72,7 +72,7 @@ function isIdentityQuery(question: string): boolean {
 
 function isProjectQuery(question: string): boolean {
   if (isIdentityQuery(question)) return false;
-  return /\b(capstone|project|shipped|portfolio|demo|checkpoint|lens|broadcast)\b/i.test(
+  return /\b(capstone|project|shipped|portfolio|demo|checkpoint|lens|broadcast|checkmydevice|shopscript|cs0035)\b/i.test(
     question
   );
 }
@@ -81,8 +81,12 @@ function isProjectCard(card: { kind: string; title: string; tagsJson: string | n
   const tags = tagsOf(card.tagsJson).toLowerCase();
   return (
     card.kind === "project" ||
-    /portfolio|capstone|checkpoint|lens|broadcast|muni grounded/i.test(card.title) ||
-    /\b(portfolio|capstones|checkpoint|lens|broadcast|projects)\b/.test(tags)
+    /portfolio|capstone|checkpoint|lens|broadcast|muni grounded|checkmydevice|shopscript|all projects/i.test(
+      card.title
+    ) ||
+    /\b(portfolio|capstones|checkpoint|lens|broadcast|projects|checkmydevice|shopscript|cs0035)\b/.test(
+      tags
+    )
   );
 }
 

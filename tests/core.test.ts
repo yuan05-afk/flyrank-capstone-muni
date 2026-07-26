@@ -47,6 +47,15 @@ describe("grounded answer schema", () => {
 });
 
 describe("grounding guard", () => {
+  it("does not treat play as a match for display", async () => {
+    const { topicalOverlap } = await import("@/services/guard.service");
+    const score = topicalOverlap(
+      "Which NBA team did Yuan play for last season?",
+      "CheckMyDevice personal project display battery network sensors privacy-first browser"
+    );
+    expect(score).toBeLessThan(0.2);
+  });
+
   it("refuses weak retrieval", () => {
     const verdict = guardGrounding({
       bestScore: 0.1,
@@ -80,6 +89,16 @@ describe("deterministic privacy guard", () => {
 
   it("does not block the public contact path", () => {
     expect(isSensitivePrivateQuestion("How can someone contact Yuan?")).toBe(false);
+  });
+});
+
+describe("deterministic fantasy guard", () => {
+  it("blocks sports fantasy claims", async () => {
+    const { isOutOfDomainFantasyQuestion } = await import("@/services/guard.service");
+    expect(isOutOfDomainFantasyQuestion("Which NBA team did Yuan play for last season?")).toBe(
+      true
+    );
+    expect(isOutOfDomainFantasyQuestion("What Capstone projects has Yuan shipped?")).toBe(false);
   });
 });
 
@@ -145,6 +164,28 @@ describe("chat decision core", () => {
     expect(
       result.retrieved.some((item) => /capstone|checkpoint|lens|broadcast|muni/i.test(item.title))
     ).toBe(true);
+  });
+
+  it("grounds CheckMyDevice as a personal project, not a Capstone", async () => {
+    const result = await chatService.ask({
+      question: "What is CheckMyDevice and is it a Capstone?",
+    });
+    expect(result.answer.status).toBe("grounded");
+    expect(result.answer.answer.toLowerCase()).toMatch(/checkmydevice/);
+    expect(result.answer.answer.toLowerCase()).toMatch(/personal/);
+    expect(result.answer.answer.toLowerCase()).toMatch(/not a flyrank capstone|not a capstone|personal project/);
+    expect(result.retrieved.some((item) => /checkmydevice/i.test(item.title))).toBe(true);
+  });
+
+  it("grounds ShopScript as a CS0035 course project", async () => {
+    const result = await chatService.ask({
+      question: "What is ShopScript and which course is it for?",
+    });
+    expect(result.answer.status).toBe("grounded");
+    expect(result.answer.answer.toLowerCase()).toMatch(/shopscript/);
+    expect(result.answer.answer.toLowerCase()).toMatch(/cs0035|programming languages/);
+    expect(result.answer.answer.toLowerCase()).toMatch(/course project|lead developer/);
+    expect(result.retrieved.some((item) => /shopscript/i.test(item.title))).toBe(true);
   });
 
   it("grounds identity questions like who is yuan", async () => {
