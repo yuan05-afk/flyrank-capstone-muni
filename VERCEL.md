@@ -76,9 +76,12 @@ Open the deployed URL and sign in with the `DEMO_API_KEY` value you set in Verce
 - **Long drains**: Heavy `drain=1` runs belong in local scripts (`pnpm worker:tick`) or short cron ticks, not long serverless requests.
 - **Seed providers**: Default chat and embeddings stay deterministic and $0; optional Groq/Gemini need keys and stay behind the same guard contracts.
 
-## Local development with the same stack
+## Local development with an isolated Neon branch
 
-Copy `.env.example` to `.env`, set `DATABASE_URL` to a Neon branch or local Postgres, then:
+Create a schema-only Neon branch named `development` from `main`. Copy
+`.env.example` to `.env`, then set `DATABASE_URL` to the development branch's
+pooled connection string. Never use the production branch URL locally because
+tests and evals write conversations and answers.
 
 ```bash
 pnpm install
