@@ -123,6 +123,18 @@ describe("chat decision core", () => {
     expect(result.citations.some((citation) => citation.cardId === muni.id)).toBe(true);
   });
 
+  it("grounds Capstone portfolio asks without answering from the bio name line", async () => {
+    const result = await chatService.ask({
+      question: "What Capstone projects has Yuan shipped?",
+    });
+    expect(result.answer.status).toBe("grounded");
+    expect(result.answer.answer.toLowerCase()).toMatch(/capstone|checkpoint|lens|broadcast|muni/);
+    expect(result.answer.answer.toLowerCase()).not.toMatch(/^yuan andrei c\. mariano goes by yuan/);
+    expect(
+      result.retrieved.some((item) => /capstone|checkpoint|lens|broadcast|muni/i.test(item.title))
+    ).toBe(true);
+  });
+
   it("grounds identity questions like who is yuan", async () => {
     const result = await chatService.ask({
       question: "who is yuan",

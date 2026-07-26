@@ -216,12 +216,35 @@ export const chatService = {
       GUARD_CONFIG.topK,
       focusCardId
     );
-    const cards = retrieved.candidates.map((item) => ({
-      id: item.card.id,
-      title: item.card.title,
-      body: item.card.body,
-      kind: item.card.kind,
-    }));
+    const cards = retrieved.candidates
+      .map((item) => ({
+        id: item.card.id,
+        title: item.card.title,
+        body: item.card.body,
+        kind: item.card.kind,
+      }))
+      .sort((a, b) => {
+        // Keep provider context ordered by question fit, not only embedding rank.
+        const score = (card: { title: string; body: string; kind: string }) => {
+          const q = input.question.toLowerCase();
+          const hay = `${card.title} ${card.body} ${card.kind}`.toLowerCase();
+          let points = 0;
+          for (const token of q.split(/[^a-z0-9]+/).filter((part) => part.length > 2)) {
+            if (hay.includes(token) || hay.includes(token.replace(/s$/, ""))) points += 1;
+          }
+          if (/project|capstone/i.test(`${card.kind} ${card.title}`) && /capstone|project|shipped/i.test(q)) {
+            points += 3;
+          }
+          if (/portfolio|overview|difference between/i.test(card.title) && /capstone|project|shipped/i.test(q)) {
+            points += 4;
+          }
+          if (/full name|identity|about yuan/i.test(card.title) && /capstone|project|shipped/i.test(q)) {
+            points -= 3;
+          }
+          return points;
+        };
+        return score(b) - score(a);
+      });
     const corpus = retrieved.allCards
       .map((card) => `${card.title} ${card.body}`)
       .join("\n");

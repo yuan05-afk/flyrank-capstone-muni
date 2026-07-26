@@ -16,21 +16,34 @@ const STOPWORDS = new Set([
   "me", "my", "you", "your", "give", "all", "with", "about", "can",
   "could", "would", "should", "i", "us", "our", "as", "so", "if", "than", "then",
   "into", "from", "have", "has", "had", "be", "been", "being", "there", "their",
-  "more", "please", "tell", "expound", "elaborate",
+  "more", "please", "tell", "expound", "elaborate", "has",
 ]);
 
 // The seed embedding is only 64-dim hashed bag-of-words, so distinctive keywords
 // (e.g. "broadcast", "checkpoint", "yuan") can get buried. A lexical bonus never
 // lowers a card's semantic score; it only lifts cards that literally share query terms.
-const LEXICAL_WEIGHT = 0.45;
+const LEXICAL_WEIGHT = 0.5;
 const IDENTITY_BIO_BOOST = 0.35;
+const PROJECT_BOOST = 0.32;
+const IDENTITY_BIO_DEMOTE = 0.22;
+
+function lightStem(token: string): string {
+  if (token.length <= 3) return token;
+  if (token.endsWith("ies")) return `${token.slice(0, -3)}y`;
+  if (token.endsWith("sses")) return token.slice(0, -2);
+  if (token.endsWith("s") && !token.endsWith("ss") && !token.endsWith("us")) {
+    return token.slice(0, -1);
+  }
+  return token;
+}
 
 function contentTokens(text: string): string[] {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .filter((token) => token.length > 2 && !STOPWORDS.has(token));
+    .filter((token) => token.length > 2 && !STOPWORDS.has(token))
+    .map(lightStem);
 }
 
 function tagsOf(value: string | null | undefined): string {
@@ -43,7 +56,7 @@ function tagsOf(value: string | null | undefined): string {
   }
 }
 
-function lexicalScore(queryTokens: string[], cardText: string): number {
+export function lexicalScore(queryTokens: string[], cardText: string): number {
   if (queryTokens.length === 0) return 0;
   const cardTokens = new Set(contentTokens(cardText));
   let hits = 0;
@@ -57,6 +70,26 @@ function isIdentityQuery(question: string): boolean {
   return /\b(who\s+is\s+yuan|about\s+yuan|tell\s+me\s+about\s+yuan)\b/i.test(question);
 }
 
+function isProjectQuery(question: string): boolean {
+  if (isIdentityQuery(question)) return false;
+  return /\b(capstone|project|shipped|portfolio|demo|checkpoint|lens|broadcast)\b/i.test(
+    question
+  );
+}
+
+function isProjectCard(card: { kind: string; title: string; tagsJson: string | null }) {
+  const tags = tagsOf(card.tagsJson).toLowerCase();
+  return (
+    card.kind === "project" ||
+    /portfolio|capstone|checkpoint|lens|broadcast|muni grounded/i.test(card.title) ||
+    /\b(portfolio|capstones|checkpoint|lens|broadcast|projects)\b/.test(tags)
+  );
+}
+
+function isIdentityBioCard(card: { kind: string; title: string }) {
+  return card.kind === "bio" && /about yuan|full name|identity/i.test(card.title);
+}
+
 export const retrieveService = {
   async topK(question: string, k = GUARD_CONFIG.topK, focusCardId?: string) {
     const provider = embeddingProvider();
@@ -64,6 +97,8 @@ export const retrieveService = {
     const cards = await knowledgeRepository.list();
     const queryTokens = contentTokens(question);
     const identity = isIdentityQuery(question);
+    const projectAsk = isProjectQuery(question);
+
     let ranked = cards
       .filter((card) => card.embedding)
       .map((card) => {
@@ -73,13 +108,26 @@ export const retrieveService = {
           `${card.title} ${card.body} ${tagsOf(card.tagsJson)}`
         );
         let score = Math.min(1, semantic + LEXICAL_WEIGHT * lexical);
+
         // Identity asks should surface the bio card even when the seed embedding is weak.
         if (identity && (card.kind === "bio" || /about yuan/i.test(card.title))) {
           score = Math.min(1, score + IDENTITY_BIO_BOOST);
         }
-        return { card, score };
+
+        // Project / Capstone asks must not lose to a bio that merely mentions Capstones.
+        if (projectAsk && isProjectCard(card)) {
+          score = Math.min(1, score + PROJECT_BOOST);
+          if (/portfolio|overview|difference between/i.test(card.title)) {
+            score = Math.min(1, score + 0.12);
+          }
+        }
+        if (projectAsk && isIdentityBioCard(card)) {
+          score = Math.max(0, score - IDENTITY_BIO_DEMOTE);
+        }
+
+        return { card, score, lexical };
       })
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => b.score - a.score || b.lexical - a.lexical);
 
     if (focusCardId) {
       const focused = ranked.find((item) => item.card.id === focusCardId);
@@ -91,7 +139,7 @@ export const retrieveService = {
       }
     }
 
-    const candidates = ranked.slice(0, k);
+    const candidates = ranked.slice(0, k).map(({ card, score }) => ({ card, score }));
     return {
       bestScore: candidates[0]?.score ?? 0,
       candidates,

@@ -54,6 +54,37 @@ export function buildFollowUps(input: {
     const clean = title.trim();
     if (!clean) continue;
     if (/refuse|salary|privacy/i.test(clean)) continue;
+    if (/full name|identity/i.test(clean)) {
+      push("Who is Yuan?", "Who is Yuan and what does Yuan build?");
+      continue;
+    }
+    if (/about yuan/i.test(clean)) {
+      push("Who is Yuan?", "Who is Yuan and what does Yuan build?");
+      continue;
+    }
+    if (/capstone portfolio|checkpoint|lens|broadcast|muni grounded/i.test(clean)) {
+      push(
+        /checkpoint/i.test(clean)
+          ? "Checkpoint"
+          : /lens/i.test(clean)
+            ? "Lens"
+            : /broadcast/i.test(clean)
+              ? "Broadcast"
+              : /muni/i.test(clean)
+                ? "What is Muni?"
+                : "Shipped Capstones",
+        /checkpoint/i.test(clean)
+          ? "What is Checkpoint?"
+          : /lens/i.test(clean)
+            ? "What is Lens and what does its mismatch guard do?"
+            : /broadcast/i.test(clean)
+              ? "What is Broadcast and what does it generate?"
+              : /muni/i.test(clean)
+                ? "What is Muni?"
+                : "What Capstone projects has Yuan shipped?"
+      );
+      continue;
+    }
     push(clean.length > 28 ? `${clean.slice(0, 26)}…` : clean, `Tell me more about ${clean}.`);
     if (out.length >= 2) break;
   }
