@@ -142,8 +142,7 @@ thinks before speaking.
 
 1. Hand-author an SVG character in `components/MuniMascot.tsx` (Framer Motion
    states). Ship a simplified face for `BrandMark` / `public/favicon.svg`.
-2. Generate one polished illustration for hero/README under `docs/images/`
-   (and optional `public/muni/hero.png`) during the build phase.
+2. Prefer real screenshots under `docs/images/shots/` for README pitch art.
 3. Respect `prefers-reduced-motion` (static pose, no bounce).
 
 **Required animation states:**
