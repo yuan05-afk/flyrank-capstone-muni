@@ -268,12 +268,16 @@ export function ChatPanel() {
                 status: "refused",
                 suggestions: [
                   {
-                    label: "College studies",
-                    question: "Where does Yuan go to college and what is Yuan studying?",
+                    label: "Who is Yuan?",
+                    question: "Who is Yuan and what does Yuan build?",
                   },
                   {
                     label: "Shipped Capstones",
                     question: "What Capstone projects has Yuan shipped?",
+                  },
+                  {
+                    label: "Project lanes",
+                    question: "How do Capstones differ from CheckMyDevice and ShopScript?",
                   },
                 ],
                 pending: false,

@@ -247,6 +247,51 @@ describe("chat decision core", () => {
   });
 });
 
+describe("suggested next asks exploration", () => {
+  it("walks outward from the current topic instead of repeating it", async () => {
+    const { buildFollowUps } = await import("@/services/followups.service");
+    const first = buildFollowUps({
+      status: "grounded",
+      question: "What Capstone projects has Yuan shipped?",
+      retrievedTitles: ["Capstone portfolio overview"],
+    });
+    expect(first.map((item) => item.label)).not.toContain("Shipped Capstones");
+    expect(first.some((item) => /Checkpoint|Lens|Broadcast|Muni|Project lanes/i.test(item.label))).toBe(true);
+
+    const second = buildFollowUps({
+      status: "grounded",
+      question: "What is Checkpoint?",
+      retrievedTitles: ["Checkpoint lead-capture platform"],
+      priorQuestions: ["What Capstone projects has Yuan shipped?"],
+    });
+    expect(second.map((item) => item.label)).not.toContain("Shipped Capstones");
+    expect(second.map((item) => item.label)).not.toContain("Checkpoint");
+    expect(second.some((item) => /Lens|Broadcast|Preferred stack|Project lanes/i.test(item.label))).toBe(true);
+  });
+
+  it("keeps exploring new clusters after several turns", async () => {
+    const { buildFollowUps } = await import("@/services/followups.service");
+    const next = buildFollowUps({
+      status: "grounded",
+      question: "What is Lens and what does its mismatch guard do?",
+      retrievedTitles: ["Lens image relevance"],
+      priorQuestions: [
+        "Who is Yuan and what does Yuan build?",
+        "Where does Yuan go to college and what is Yuan studying?",
+        "What Capstone projects has Yuan shipped?",
+        "What is Checkpoint?",
+      ],
+    });
+    const labels = next.map((item) => item.label);
+    expect(labels).not.toContain("Who is Yuan?");
+    expect(labels).not.toContain("College studies");
+    expect(labels).not.toContain("Shipped Capstones");
+    expect(labels).not.toContain("Checkpoint");
+    expect(labels).not.toContain("Lens");
+    expect(labels.length).toBeGreaterThan(0);
+  });
+});
+
 describe("job idempotency", () => {
   it("does not duplicate embed jobs for the same card key", async () => {
     const cards = await knowledgeRepository.list();

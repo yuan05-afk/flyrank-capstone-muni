@@ -39,6 +39,7 @@ async function refuseEarly(input: {
   answer: string;
   reason: string;
   flag: string;
+  priorQuestions?: string[];
 }) {
   const provider = chatProvider();
   const record = await answersRepository.create({
@@ -83,6 +84,7 @@ async function refuseEarly(input: {
     suggestions: buildFollowUps({
       status: "refused",
       question: input.question,
+      priorQuestions: input.priorQuestions,
     }),
     retrieved: [],
     provider: provider.id,
@@ -180,6 +182,7 @@ export const chatService = {
         answer: ASSIST_REFUSAL,
         reason: "Deterministic assist policy blocked a code, exploit, or homework request.",
         flag: "assistBlocked",
+        priorQuestions: recentUserQuestions,
       });
     }
 
@@ -190,6 +193,7 @@ export const chatService = {
         answer: REFUSAL,
         reason: "Deterministic out-of-domain fantasy policy blocked an unsupported claim.",
         flag: "fantasyBlocked",
+        priorQuestions: recentUserQuestions,
       });
     }
 
@@ -200,6 +204,7 @@ export const chatService = {
         answer: PRIVACY_REFUSAL,
         reason: "Deterministic privacy policy blocked a sensitive or excluded-data request.",
         flag: "privacyBlocked",
+        priorQuestions: recentUserQuestions,
       });
     }
 
@@ -247,6 +252,7 @@ export const chatService = {
         suggestions: buildFollowUps({
           status: "open",
           question: input.question,
+          priorQuestions: recentUserQuestions,
         }),
         retrieved: [],
         provider: provider.id,
@@ -451,6 +457,7 @@ export const chatService = {
         status: verdict.status,
         question: input.question,
         retrievedTitles: cards.map((card) => card.title),
+        priorQuestions: recentUserQuestions,
       }),
       retrieved: cards.map((card, index) => ({
         id: card.id,
