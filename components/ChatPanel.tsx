@@ -268,7 +268,7 @@ export function ChatPanel() {
                 status: "refused",
                 suggestions: [
                   {
-                    label: "Studies at FEU",
+                    label: "Studies at FEU Tech",
                     question: "Where does Yuan go to college and what is Yuan studying?",
                   },
                   {

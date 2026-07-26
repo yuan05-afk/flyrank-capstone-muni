@@ -10,14 +10,14 @@ export type PersonaCard = {
 
 /**
  * Verified persona knowledge for Muni.
- * Privacy: no phone, no email, no pre-college schools. College (FEU) is allowed.
+ * Privacy: no phone, no email, no pre-college schools. College (FEU Tech) is allowed.
  * Contact path is GitHub + Muni chat / Contact section only.
  */
 export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "bio",
     title: "About Yuan",
-    body: "Yuan is a Bachelor of Science in Computer Science student specializing in Data Science at Far Eastern University (FEU), and a FlyRankAI intern building Capstone products across Backend AI Engineering and General AI Fluency. Yuan's full name is Yuan Andrei C. Mariano, and Yuan usually goes by Yuan. Yuan has training in machine learning, data analysis, artificial intelligence, and software engineering, with hands-on experience from academic projects, collaborative work, and technical tasks in data modeling, programming, problem-solving, algorithm development, and data-driven solutions. Recently Yuan shipped four live FlyRank Capstones: Checkpoint, Lens, Broadcast, and Muni. Beyond Capstones, Yuan also built CheckMyDevice as a personal project and ShopScript as a CS0035 Programming Languages course project. Yuan is based in the Philippines.",
+    body: "Yuan is a Bachelor of Science in Computer Science student specializing in Data Science at FEU Institute of Technology (FEU Tech), and a FlyRankAI intern building Capstone products across Backend AI Engineering and General AI Fluency. Yuan's full name is Yuan Andrei C. Mariano, and Yuan usually goes by Yuan. Yuan has training in machine learning, data analysis, artificial intelligence, and software engineering, with hands-on experience from academic projects, collaborative work, and technical tasks in data modeling, programming, problem-solving, algorithm development, and data-driven solutions. Recently Yuan shipped four live FlyRank Capstones: Checkpoint, Lens, Broadcast, and Muni. Beyond Capstones, Yuan also built CheckMyDevice as a personal project and ShopScript as a CS0035 Programming Languages course project. Yuan is based in the Philippines.",
     sourceId: "persona.bio",
     tags: ["yuan", "andrei", "mariano", "who", "about", "bio", "introduction", "philippines", "intern", "flyrank"],
   },
@@ -31,16 +31,16 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "bio",
     title: "College education",
-    body: "Yuan studies at Far Eastern University (FEU) in a Bachelor of Science in Computer Science program with a Specialization in Data Science (2023 to present). Yuan is a consistent Dean's Lister and President's Lister for academic years 2023 to present. Muni only shares college-level education. Pre-college schools are not part of the verified knowledge base.",
+    body: "Yuan studies at FEU Institute of Technology (FEU Tech), the technology school of the Far Eastern University group, in a Bachelor of Science in Computer Science program with a Specialization in Data Science (2023 to present). Yuan is a consistent Dean's Lister and President's Lister for academic years 2023 to present. Muni only shares college-level education. Pre-college schools are not part of the verified knowledge base.",
     sourceId: "persona.education",
-    tags: ["education", "college", "feu", "far eastern university", "computer science", "data science", "degree", "dean", "president", "lister", "school", "university", "studying"],
+    tags: ["education", "college", "feu", "feu tech", "feu institute of technology", "far eastern university", "computer science", "data science", "degree", "dean", "president", "lister", "school", "university", "studying"],
   },
   {
     kind: "bio",
     title: "Academic standing",
-    body: "At Far Eastern University, Yuan has been a consistent Dean's Lister and President's Lister from AY 2023 to present while pursuing BS Computer Science with Specialization in Data Science. That academic standing reflects strong performance alongside Capstone shipping and organization involvement.",
+    body: "At FEU Institute of Technology (FEU Tech), Yuan has been a consistent Dean's Lister and President's Lister from AY 2023 to present while pursuing BS Computer Science with Specialization in Data Science. That academic standing reflects strong performance alongside Capstone shipping and organization involvement.",
     sourceId: "persona.academics",
-    tags: ["dean's list", "president's list", "honors", "grades", "academic", "awards", "feu"],
+    tags: ["dean's list", "president's list", "honors", "grades", "academic", "awards", "feu", "feu tech"],
   },
   {
     kind: "bio",
@@ -87,7 +87,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "project",
     title: "Capstone portfolio overview",
-    body: `Yuan has shipped four live FlyRank Capstones that form the internship Capstone portfolio: Checkpoint for embeddable lead capture, Lens for image relevance with a mismatch guard, Broadcast for social campaign variants, and Muni for grounded personal answers with suggested next asks. These four are FlyRankAI Capstones, not personal side projects and not FEU course projects. Together they show widget APIs, retrieval guards, durable jobs, eval habits, and product polish. Live sites: ${CAPSTONE_LINKS.map((l) => `${l.name} ${l.url}`).join("; ")}.`,
+    body: `Yuan has shipped four live FlyRank Capstones that form the internship Capstone portfolio: Checkpoint for embeddable lead capture, Lens for image relevance with a mismatch guard, Broadcast for social campaign variants, and Muni for grounded personal answers with suggested next asks. These four are FlyRankAI Capstones, not personal side projects and not FEU Tech course projects. Together they show widget APIs, retrieval guards, durable jobs, eval habits, and product polish. Live sites: ${CAPSTONE_LINKS.map((l) => `${l.name} ${l.url}`).join("; ")}.`,
     sourceId: "persona.portfolio",
     tags: ["portfolio", "capstones", "shipped", "work", "demos", "overview", "flyrank capstones", "internship projects"],
   },
@@ -224,7 +224,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "faq",
     title: "Who is Yuan?",
-    body: "Yuan is a FEU BS Computer Science (Data Science) student, Dean's and President's Lister, FlyRankAI intern, and builder of four live Capstones: Checkpoint, Lens, Broadcast, and Muni. Yuan also built CheckMyDevice as a personal project and ShopScript as a CS0035 Programming Languages course project. Yuan's full name is Yuan Andrei C. Mariano. Ask Muni about college education, skills, projects, organizations, or how to leave a note. Muni will refuse private details that are not in the verified cards.",
+    body: "Yuan is an FEU Tech BS Computer Science (Data Science) student, Dean's and President's Lister, FlyRankAI intern, and builder of four live Capstones: Checkpoint, Lens, Broadcast, and Muni. Yuan also built CheckMyDevice as a personal project and ShopScript as a CS0035 Programming Languages course project. Yuan's full name is Yuan Andrei C. Mariano. Ask Muni about college education, skills, projects, organizations, or how to leave a note. Muni will refuse private details that are not in the verified cards.",
     sourceId: "persona.faq.who",
     tags: ["who is yuan", "about yuan", "introduce", "summary"],
   },
@@ -238,14 +238,14 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "faq",
     title: "What should recruiters ask Muni?",
-    body: "Recruiters can ask about Yuan's FEU program and honors, Capstone stack, shipped projects including CheckMyDevice and ShopScript, Backend AI craft, ACM and JPCS, and AI bootcamps. Use GitHub or Muni chat notes for outreach. Muni will not share private contact details.",
+    body: "Recruiters can ask about Yuan's FEU Tech program and honors, Capstone stack, shipped projects including CheckMyDevice and ShopScript, Backend AI craft, ACM and JPCS, and AI bootcamps. Use GitHub or Muni chat notes for outreach. Muni will not share private contact details.",
     sourceId: "persona.faq.recruiter",
     tags: ["recruiter", "hiring", "interview", "cv", "resume", "candidate"],
   },
   {
     kind: "faq",
     title: "Is Yuan open to opportunities?",
-    body: "Yuan is actively building as a FlyRankAI intern and FEU Computer Science (Data Science) student. For internship, collaboration, or project opportunities, leave a note in Muni chat or open Yuan's GitHub profile at https://github.com/yuan05-afk. Muni can describe skills and shipped work from verified cards, then Yuan can follow up personally.",
+    body: "Yuan is actively building as a FlyRankAI intern and FEU Tech Computer Science (Data Science) student. For internship, collaboration, or project opportunities, leave a note in Muni chat or open Yuan's GitHub profile at https://github.com/yuan05-afk. Muni can describe skills and shipped work from verified cards, then Yuan can follow up personally.",
     sourceId: "persona.faq.opportunities",
     tags: ["opportunity", "available", "hire", "open to work", "collaborate", "internship offer"],
   },
@@ -259,9 +259,9 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "faq",
     title: "What is Yuan studying?",
-    body: "Yuan is studying Bachelor of Science in Computer Science with Specialization in Data Science at Far Eastern University (FEU), from 2023 to present, and is a consistent Dean's Lister and President's Lister.",
+    body: "Yuan is studying Bachelor of Science in Computer Science with Specialization in Data Science at FEU Institute of Technology (FEU Tech), from 2023 to present, and is a consistent Dean's Lister and President's Lister.",
     sourceId: "persona.faq.studying",
-    tags: ["studying", "major", "course", "program", "bs cs", "data science specialization"],
+    tags: ["studying", "major", "course", "program", "bs cs", "data science specialization", "feu tech"],
   },
   {
     kind: "faq",
@@ -287,7 +287,7 @@ export const PERSONA_CARDS: PersonaCard[] = [
   {
     kind: "faq",
     title: "What can someone ask Muni about?",
-    body: "Ask about Yuan's FEU studies, Capstones, CheckMyDevice, ShopScript, skills, organizations, or how to leave a note. Ask naturally. For private details or coding-assist asks, Muni refuses.",
+    body: "Ask about Yuan's FEU Tech studies, Capstones, CheckMyDevice, ShopScript, skills, organizations, or how to leave a note. Ask naturally. For private details or coding-assist asks, Muni refuses.",
     sourceId: "persona.faq.topics",
     tags: ["what can i ask", "topics", "help", "capabilities", "questions"],
   },
