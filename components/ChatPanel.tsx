@@ -152,6 +152,7 @@ export function ChatPanel() {
   const [sessionReady, setSessionReady] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const presetHandled = useRef(false);
 
   const emptySuggestions = STARTER_SUGGESTIONS.slice(0, 3);
   const railSuggestions = STARTER_SUGGESTIONS;
@@ -287,6 +288,16 @@ export function ChatPanel() {
       window.setTimeout(() => inputRef.current?.focus(), 40);
     }
   }
+
+  useEffect(() => {
+    if (!sessionReady || busy || presetHandled.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const preset = params.get("q")?.trim();
+    if (!preset) return;
+    presetHandled.current = true;
+    window.history.replaceState({}, "", "/chat");
+    void ask(preset);
+  }, [sessionReady, busy]);
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();

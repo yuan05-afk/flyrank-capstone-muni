@@ -178,7 +178,7 @@ export function LandingPage({ knowledgeCount }: { knowledgeCount: number }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...spring, delay: 0.3 }}
           >
-            <span className="match-token">q: What is Lens?</span>
+            <span className="match-token">q: What is Muni?</span>
             <span className="text-muted">
               <MotifArrow className="h-3.5 w-3.5" />
             </span>
@@ -280,10 +280,10 @@ export function LandingPage({ knowledgeCount }: { knowledgeCount: number }) {
             </div>
             <MuniMascot state="answering" className="mx-auto h-28 w-28" />
             <p className="mt-4 text-sm text-muted">
-              Lens tags images and refuses wrong pairings with a mismatch guard.
+              Muni answers from verified knowledge cards and refuses when evidence is missing.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="tag-chip">Tell me more about Lens</span>
+              <span className="tag-chip">What is Muni?</span>
               <span className="badge badge-ok">next ask</span>
             </div>
           </motion.article>
@@ -352,7 +352,7 @@ export function LandingPage({ knowledgeCount }: { knowledgeCount: number }) {
           <BrandMark className="h-12 w-12" />
           <h2 className="!mb-2">Ask once. Stay grounded.</h2>
           <p className="max-w-xl text-muted">
-            Ask about Lens, try a code-assist refuse, then open the owner inbox to see grounded vs guarded and knowledge gaps.
+            Ask about Muni, try a code-assist refuse, then open the owner inbox to see grounded vs guarded and knowledge gaps.
           </p>
           <Link href="/chat" className="btn-primary mt-6">
             Open Muni <MotifArrow />

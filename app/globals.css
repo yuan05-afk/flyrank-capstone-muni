@@ -467,13 +467,25 @@ body {
   font: 500 10px "IBM Plex Mono", monospace;
   color: var(--muted);
   cursor: pointer;
-  transition: border-color .15s ease, color .15s ease, transform .15s ease;
+  transition: border-color .15s ease, color .15s ease, transform .15s ease, background .15s ease;
+}
+button.source-chip {
+  appearance: none;
+  text-align: left;
+}
+a.source-chip {
+  text-decoration: none;
 }
 .source-chip:hover,
 .source-chip.is-open {
   border-color: rgba(217,119,6,.5);
   color: #92400e;
+  background: var(--fog);
   transform: translateY(-1px);
+}
+.source-chip:focus-visible {
+  outline: 2px solid rgba(217,119,6,.45);
+  outline-offset: 2px;
 }
 .source-chip-kind {
   margin-right: 6px;
